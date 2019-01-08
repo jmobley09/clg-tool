@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<html>
 
 <head>
     <meta charset="utf-8" />
@@ -19,16 +18,50 @@
     <link rel="stylesheet" type="text/css" media="screen" href="assets/css/reset.css" />
     <link rel="stylesheet" type="text/css" media="screen" href="assets/css/style.css" />
 
+    <!-- Link to XLSX CDN -->
+    <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
+    <script lang="javascript" src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.14.1/jszip.js"></script>
+
 </head>
 
 <body>
+    <!-- Nav Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <img src="" alt="apple-logo">
+        <a class="navbar-brand" href="#">Cable Length Generator</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav"
+            aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item active">
+                    <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Features</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Development Schedule</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
     <div class="container">
         <div class="row">
-            <div class="col-md-12">
-                <h1>Cable Length Generator</h1>
+            <div class="col-md-6">
+                    <input type="file" id="OriginalUpload" multiple size="50" onchange="">
+                    <div id="drop">Drop Spreadsheet Here..!</div>
             </div>
         </div>
+        <div class="row">
+                <div class="col-md-6">
+                        <button id="start">Run</button>
+                </div>
+            </div>
     </div>
+
 </body>
 <script src="assets/javascript/logic.js"></script>
 
