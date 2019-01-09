@@ -1,23 +1,28 @@
 
+$('#upload').change(function(e){
+    var reader = new FileReader();
 
-var rABS = true; // true: readAsBinaryString ; false: readAsArrayBuffer
-function handleFile(e) {
-  var files = e.target.files, f = files[0];
-  var reader = new FileReader();
-  reader.onload = function(e) {
-    var data = e.target.result;
-    if(!rABS) data = new Uint8Array(data);
-    var workbook = XLSX.read(data, {type: rABS ? 'binary' : 'array'});
+    reader.readAsArrayBuffer(e.target.files[0]);
 
-    $('#sample').append(workbook);
-    console.log(JSON.stringify(workbook));
-  };
-  if(rABS) reader.readAsBinaryString(f); else reader.readAsArrayBuffer(f);
-}
+    reader.onload = function(e) {
+        var data = new Uint8Array(reader.result);
+        var wb = XLSX.read(data,{type: 'array'});
 
-var drop = document.getElementById('drop');
-drop.addEventListener('change', handleFile, false);
+        var htmlstr = XLSX.write(wb,{sheet: 'Cabinet Detail (sub status) - v', type: 'binary', bookType: 'html'});
+        $('#sample').append(htmlstr);
+    }
+});
 
-var input = document.getElementById('upload');
-input.addEventListener('change', handleFile, false);
-console.log();
+$('#drop').change(function(e){
+    var reader = new FileReader();
+
+    reader.readAsArrayBuffer(e.target.files[0]);
+
+    reader.onload = function(e) {
+        var data = new Uint8Array(reader.result);
+        var wb = XLSX.read(data,{type: 'array'});
+
+        var htmlstr = XLSX.write(wb,{sheet: 'Cabinet Detail (sub status) - v', type: 'binary', bookType: 'html'});
+        $('#sample').append(htmlstr);
+    }
+});
