@@ -9,7 +9,7 @@ function handleFile(e) {
     if(!rABS) data = new Uint8Array(data);
     var workbook = XLSX.read(data, {type: rABS ? 'binary' : 'array'});
 
-    /* DO SOMETHING WITH workbook HERE */
+    $('#sample').append(workbook);
     console.log(JSON.stringify(workbook));
   };
   if(rABS) reader.readAsBinaryString(f); else reader.readAsArrayBuffer(f);
@@ -17,3 +17,5 @@ function handleFile(e) {
 
 var drop = document.getElementById('drop');
 drop.addEventListener('change', handleFile, false);
+
+console.log();

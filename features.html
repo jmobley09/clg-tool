@@ -17,11 +17,6 @@
     <!-- CSS Links -->
     <link rel="stylesheet" type="text/css" media="screen" href="assets/css/reset.css" />
     <link rel="stylesheet" type="text/css" media="screen" href="assets/css/style.css" />
-
-    <!-- Link to XLSX CDN -->
-    <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
-    <script lang="javascript" src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.14.1/jszip.js"></script>
-
 </head>
 
 <body>
@@ -35,10 +30,10 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav">
-                <li class="nav-item active">
+                <li class="nav-item">
                     <a class="nav-link" href="index.html">Home <span class="sr-only">(current)</span></a>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item active">
                     <a class="nav-link" href="features.html">Features</a>
                 </li>
                 <li class="nav-item">
@@ -50,35 +45,6 @@
             </ul>
         </div>
     </nav>
-
-    <div class="container">
-        <div class="row" style="text-align: center; font-weight: bolder">
-            <div class="col-md-12">
-                <p>Please Drag or Upload Unicorn Patch Plan to Begin</p>
-            </div>
-        </div>
-        <div class="container">
-            <div class="row">
-                <div class="col-md-6">
-                    <input type="file" id="OriginalUpload" multiple size="50" onchange="">
-                </div>
-            </div>
-            <br>
-            <div class="row">
-                <div class="col-md-6">
-                    <div id="drop">Drop Spreadsheet Here..!</div>
-                </div>
-            </div>
-            <br>
-            <div class="row">
-                <div class="col-md-6">
-                    <button id="start">Run</button>
-                </div>
-            </div>
-        </div>
-
-        <div id="sample"></div>
-
 </body>
 <script src="assets/javascript/logic.js"></script>
 
