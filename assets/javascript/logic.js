@@ -18,4 +18,6 @@ function handleFile(e) {
 var drop = document.getElementById('drop');
 drop.addEventListener('change', handleFile, false);
 
+var input = document.getElementById('upload');
+input.addEventListener('change', handleFile, false);
 console.log();
