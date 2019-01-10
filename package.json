@@ -1,0 +1,20 @@
+{
+  "name": "clg-tool",
+  "version": "1.0.0",
+  "description": "Cable Length Generator tool for the SS teams",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jmobley09/clg-tool.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jmobley09/clg-tool/issues"
+  },
+  "homepage": "https://github.com/jmobley09/clg-tool#readme"
+}
