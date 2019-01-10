@@ -11,10 +11,13 @@
     "url": "git+https://github.com/jmobley09/clg-tool.git"
   },
   "keywords": [],
-  "author": "",
+  "author": "Joshua Mobley",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/jmobley09/clg-tool/issues"
   },
-  "homepage": "https://github.com/jmobley09/clg-tool#readme"
+  "homepage": "https://github.com/jmobley09/clg-tool#readme",
+  "engines": {
+    "node": "10.11.0"
+  }
 }
