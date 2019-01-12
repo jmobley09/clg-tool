@@ -1,1 +1,1 @@
-web: node logic.js
+web: node server.js

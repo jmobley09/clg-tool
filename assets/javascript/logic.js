@@ -1,49 +1,22 @@
-$('#upload').change(function (e) {
-    var reader = new FileReader();
 
-    reader.readAsArrayBuffer(e.target.files[0]);
+const rABS = true; // true: readAsBinaryString ; false: readAsArrayBuffer
 
+function handleFile(e) {
+    const files = e.target.files, f = files[0];
+    const reader = new FileReader();
     reader.onload = function (e) {
-        var data = new Uint8Array(reader.result);
-        var wb = XLSX.read(data, { type: 'array' });
-        var first_sheet_name = wb.SheetNames[0];
+        const data = e.target.result;
 
-        var htmlstr = XLSX.write(wb, { sheet: first_sheet_name, type: 'binary', bookType: 'html' });
-        $('#sample').append(htmlstr);
+        if (!rABS) data = new Uint8Array(data);
+        const workbook = XLSX.read(data, { type: rABS ? 'binary' : 'array' });
 
-        console.log(htmlstr);
-    }
-});
+        const first_sheet_name = workbook.SheetNames[0];
+        /* Get worksheet */
+        const worksheet = workbook.Sheets[first_sheet_name];
+        console.log(XLSX.utils.sheet_to_json(worksheet, { raw: true }));
+    };
+    if (rABS) reader.readAsBinaryString(f); else reader.readAsArrayBuffer(f);
+}
 
-// var XLSX = require('xlsx');
-// var workbook = XLSX.readFile('test.xlsx');
-// var sheet_name_list = workbook.SheetNames;
-// sheet_name_list.forEach(function(y) {
-//     var worksheet = workbook.Sheets[y];
-//     var headers = {};
-//     var data = [];
-//     for(z in worksheet) {
-//         if(z[0] === '!') continue;
-//         //parse out the column, row, and value
-//         var tt = 0;
-//         for (var i = 0; i < z.length; i++) {
-//             if (!isNaN(z[i])) {
-//                 tt = i;
-//                 break;
-//             }
-//         };
-//         var col = z.substring(0,tt);
-//         var row = parseInt(z.substring(tt));
-//         var value = worksheet[z].v;
-
-//         //store header names
-//         if(row == 1 && value) {
-//             headers[col] = value;
-//             continue;
-//         }
-
-//         if(!data[row]) data[row]={};
-//         data[row][headers[col]] = value;
-//     }
-//     console.log(data);
-// });
+const upload = document.getElementById('upload');
+upload.addEventListener('change', handleFile, false);
