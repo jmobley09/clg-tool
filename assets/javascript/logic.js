@@ -22,6 +22,38 @@ function handleFile(e) {
         // end result. uploaded file formated into json
         const jsonSheet = XLSX.utils.sheet_to_json(worksheet, { raw: true });
         console.log(jsonSheet);
+
+        for (let i = 0; i < jsonSheet.length; i ++) {
+
+            // Pulls remote and local locations and breaks into Arrays
+            const LocalArr = jsonSheet[i].LLocation.split('.');
+            const RemoteArr = jsonSheet[i].RLocation.split('.');
+            const LocalPort = jsonSheet[i].LPort.split('/');
+            const RemotePort = jsonSheet[i].RPort.split('/');
+
+            // Object to hold all data of First Location
+            const Localobj = {
+                Location: LocalArr[0] + '.' + LocalArr[1] + '.' + LocalArr[2],
+                Hall: LocalArr[4],
+                Row: LocalArr[5],
+                Cab: LocalArr[6],
+                RU: LocalArr[7],
+                Port: LocalPort
+            };
+            console.log("--- LOCAL OBJECTS ---");
+            console.log(Localobj);
+            // Object to hold all data of Second Location
+            const Remoteobj = {
+                Location: RemoteArr[0] + '.' + RemoteArr[1] + '.' + RemoteArr[2],
+                Hall: RemoteArr[4],
+                Row: RemoteArr[5],
+                Cab: RemoteArr[6],
+                RU: RemoteArr[7],
+                Port: LocalPort
+            };
+            console.log("--- REMOTE OBJECTS ---");
+            console.log(Remoteobj);
+        }
         
     };
 
