@@ -49,7 +49,7 @@ function handleFile(e) {
                 Row: RemoteArr[5],
                 Cab: RemoteArr[6],
                 RU: RemoteArr[7],
-                Port: LocalPort
+                Port: RemotePort
             };
             console.log("--- REMOTE OBJECTS ---");
             console.log(Remoteobj);
