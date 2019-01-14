@@ -1,7 +1,7 @@
 
 const rABS = true; // true: readAsBinaryString ; false: readAsArrayBuffer
 
-// main function loader for when file is selected for upload
+// main function loader for when file is uploaded for length calculation
 function handleFile(e) {
 
     // defines variable for uploaded file
@@ -23,13 +23,17 @@ function handleFile(e) {
         const jsonSheet = XLSX.utils.sheet_to_json(worksheet, { raw: true });
         console.log(jsonSheet);
 
+        
+
         for (let i = 0; i < jsonSheet.length; i ++) {
 
             // Pulls remote and local locations and breaks into Arrays
-            const LocalArr = jsonSheet[i].LLocation.split('.');
-            const RemoteArr = jsonSheet[i].RLocation.split('.');
-            const LocalPort = jsonSheet[i].LPort.split('/');
-            const RemotePort = jsonSheet[i].RPort.split('/');
+            const LocalArr = jsonSheet[i]['L. Location'].split('.');
+            const RemoteArr = jsonSheet[i]['R. Location'].split('.');
+            const LocalPort = jsonSheet[i]['L. Port'].split('/');
+            const RemotePort = jsonSheet[i]['L. Port'].split('/');
+
+            console.log(LocalArr);
 
             // Object to hold all data of First Location
             const Localobj = {
@@ -40,7 +44,7 @@ function handleFile(e) {
                 RU: LocalArr[7],
                 Port: LocalPort
             };
-            console.log("--- LOCAL OBJECTS ---");
+            console.log("--- LOCAL OBJECT ---");
             console.log(Localobj);
             // Object to hold all data of Second Location
             const Remoteobj = {
@@ -51,8 +55,12 @@ function handleFile(e) {
                 RU: RemoteArr[7],
                 Port: RemotePort
             };
-            console.log("--- REMOTE OBJECTS ---");
+            console.log("--- REMOTE OBJECT ---");
             console.log(Remoteobj);
+            console.log('______________________');
+
+            // Calculations for length
+            const ruWidth = 2;
         }
         
     };
