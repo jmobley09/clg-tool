@@ -136,9 +136,9 @@ function handleFile(e) {
 
                 const typeConvert = () => {
                     if (Localobj.Type == "Copper") {
-                        console.log( inCabLength + ' FT in cab copper connection');
+                        console.log(inCabLength + ' FT in cab copper connection');
                     } else if (Localobj.Type == "Fiber") {
-                        console.log( inCabMeter + ' Meter in cab Fiber connection');
+                        console.log(inCabMeter + ' Meter in cab Fiber connection');
                     }
                 }
                 typeConvert();
@@ -148,7 +148,27 @@ function handleFile(e) {
             if (Localobj.Row == Remoteobj.Row) {
                 inCabCalc();
             };
-        };
+        }; // end of for loop
+        // 
+        // 
+        // Beginning of code to write info to new workbook and trigger a download
+        // 
+        //  
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, worksheet);
+
+        /* write workbook (use type 'binary') */
+        var wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'binary' });
+
+        /* generate a download */
+        function s2ab(s) {
+            var buf = new ArrayBuffer(s.length);
+            var view = new Uint8Array(buf);
+            for (var i = 0; i != s.length; ++i) view[i] = s.charCodeAt(i) & 0xFF;
+            return buf;
+        }
+
+        saveAs(new Blob([s2ab(wbout)], { type: "application/octet-stream" }), "sheetjs.xlsx");
 
     };
 
