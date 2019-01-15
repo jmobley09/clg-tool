@@ -38,8 +38,8 @@ function handleFile(e) {
                     cableType = 'Fiber';
                 } else if (jsonSheet[i]['Port Type'] == '10G' || jsonSheet[i]['Port Type'] == '1G' || jsonSheet[i]['Port Type'] == '10G' && LocalPort == 'Ethernet 1' || RemotePort == 'Ethernet 1') {
                     cableType = 'Copper';
-                }
-            }
+                };
+            };
             CableType();
 
             // Object to hold all data of First Location
@@ -47,8 +47,8 @@ function handleFile(e) {
                 Location: LocalArr[0] + '.' + LocalArr[1] + '.' + LocalArr[2],
                 Hall: LocalArr[4],
                 Row: LocalArr[5],
-                Cab: LocalArr[6],
-                RU: LocalArr[7],
+                Cab: parseFloat(LocalArr[6]),
+                RU: parseFloat(LocalArr[7]),
                 Port: LocalPort,
                 Type: cableType
             };
@@ -58,48 +58,94 @@ function handleFile(e) {
                 Location: RemoteArr[0] + '.' + RemoteArr[1] + '.' + RemoteArr[2],
                 Hall: RemoteArr[4],
                 Row: RemoteArr[5],
-                Cab: RemoteArr[6],
-                RU: RemoteArr[7],
+                Cab: parseFloat(RemoteArr[6]),
+                RU: parseFloat(RemoteArr[7]),
                 Port: RemotePort,
                 Type: cableType
             };
+            // console.log(Localobj);
+            // console.log(Remoteobj);
 
             // Calculations for length
             // All variables stored in Inches
             const ruWidth = 2; // each RU is 2 in
-            const topCopper = 12; // from top RU to copper tray is 10in
+            const topCopper = 24; // from top RU to copper tray is 24in
             const topFiber = 18; // from top RU to fiber tray is 10in
             const cabWidth = 27; // each cab is 2ft 3 in wide
             const cabLiu = 12; // from cab 1  or cab 35 to the liu tray at the end of the row
-            const slack = 12; // extra 1 foot of slack for dressing;
+            const slack = 24; // extra 1 foot of slack for dressing;
+            const cabGap = 48; // every cab gap is 4 FT & they are located between cabs 10-11 & 25-26
 
             let inCabLength = 0;
             let outCabLength = 0;
 
             // Code block calculating Fiber connections that go out of cab
             const outCabCalc = () => {
-                if (Localobj.Row !== Remoteobj.Row && Localobj.Type == "Fiber") {
-                    console.log(outCabLength + 'Fiber Connection');
-                }
-            }
-            outCabCalc();
+                console.log(outCabLength + 'Fiber Connection');
+            };
+
+            if (Localobj.Row !== Remoteobj.Row && Localobj.Type == "Fiber") {
+                outCabCalc();
+            };
 
             // Code block calculating In Cab Copper Connections
             const inCabCalc = () => {
-                if (Localobj.Row == Remoteobj.Row && Localobj.Type == "Copper") {
-                    const cabLength = Localobj.Cab - Remoteobj.Cab;
-                    const fistRU = (52 - Localobj.RU) * 2; 
-                    const secondRU = (52 - Remoteobj.RU) * 2; 
-                    console.log(inCabLength + 'Copper Connection');
-                }
-            }
-            inCabCalc();
-        }
+
+                // Calculates the number of cabs apart, and returns only positive numbers
+                let cabLength = 0;
+                const cabLengthCalc = () => {
+                    
+                    if (Localobj.Cab > Remoteobj.Cab) {
+                        cabLength = (Localobj.Cab - Remoteobj.Cab) * cabWidth;
+                        return cabLength;
+                    } else if (Remoteobj.Cab > Localobj.Cab) {
+                        cabLength = (Remoteobj.Cab - Localobj.Cab) * cabWidth;
+                        return cabLength;
+                    } else if (Remoteobj.Cab == Localobj.Cab) {
+                        cabLength = (Remoteobj.Cab - Localobj.Cab) * cabWidth;
+                        return cabLength;
+                    };
+                };
+                cabLengthCalc();
+
+                // Vars to be used in calculations 
+                const fistRU = (52 - Localobj.RU) * ruWidth;
+                const secondRU = (52 - Remoteobj.RU) * ruWidth;
+
+                let LengthIn = 0;
+                const GapAdder = () => {
+                    if (Localobj.Cab <= 10 && (Remoteobj.Cab >= 11 && Remoteobj.Cab <= 25 )) {
+                        LengthIn = (cabLength + fistRU + secondRU + slack + (topCopper * 2)) + cabGap;
+                        return LengthIn;
+                    } else if ((Localobj.Cab >= 11 && Localobj.Cab <= 25 ) && Remoteobj.Cab >= 26) {
+                        LengthIn = (cabLength + fistRU + secondRU + slack + (topCopper * 2)) + cabGap;
+                        return LengthIn;
+                    } else if (Localobj.Cab <= 10 && Remoteobj.Cab >= 26) {
+                        LengthIn = (cabLength + fistRU + secondRU + slack + (topCopper * 2)) + (cabGap * 2);
+                        return LengthIn;
+                    } else {
+                        LengthIn = cabLength + fistRU + secondRU + slack + (topCopper * 2);
+                        return LengthIn;
+                    };
+                };
+                GapAdder();
+
+                console.log('LengthIn is equal to ' + LengthIn);
+                inCabLength = LengthIn / 12;
+                console.log(inCabLength + ' Ft Copper Connection');
+                console.log('__________');
+            };
+
+            // if rows are equal and cable type is copper runs in calc for length. Its called in cab but it does all of in row
+            if (Localobj.Row == Remoteobj.Row && Localobj.Type == "Copper") {
+                inCabCalc();
+            };
+        };
 
     };
 
     if (rABS) reader.readAsBinaryString(f); else reader.readAsArrayBuffer(f);
-}
+};
 
 const upload = document.getElementById('upload');
 upload.addEventListener('change', handleFile, false);
