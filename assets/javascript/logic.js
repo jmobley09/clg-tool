@@ -20,10 +20,13 @@ function handleFile(e) {
         const worksheet = workbook.Sheets[first_sheet_name];
 
         // end result. uploaded file formated into json
-        const jsonSheet = XLSX.utils.sheet_to_json(worksheet, { raw: true });
+        const jsonSheet = XLSX.utils.sheet_to_json(worksheet);
 
         // For loop to iterate through each object that is made. Each line in the speadsheet is an object
         for (let i = 0; i < jsonSheet.length; i++) {
+
+            // var to change number to correct cell, used @ type convert function
+            const cellNum = i + 2;
 
             // Pulls remote and local locations and breaks into Arrays
             const LocalArr = jsonSheet[i]['L. Location'].split('.');
@@ -136,8 +139,18 @@ function handleFile(e) {
 
                 const typeConvert = () => {
                     if (Localobj.Type == "Copper") {
+                        if (!worksheet["A1"]) worksheet["A1"] = {};
+                        worksheet["A1"].t = "s";
+                        worksheet["A1"].v = "issue1124";
+                        jsonSheet.LengthVal = {inCabLength};
+                        console.log(jsonSheet);
                         console.log(inCabLength + ' FT in cab copper connection');
                     } else if (Localobj.Type == "Fiber") {
+                        if (!worksheet["A1"]) worksheet["A1"] = {};
+                        worksheet["A1"].t = "s";
+                        worksheet["A1"].v = "issue1124";
+                        jsonSheet.LengthVal = {inCabLength};
+                        console.log(jsonSheet);
                         console.log(inCabMeter + ' Meter in cab Fiber connection');
                     }
                 }
@@ -148,27 +161,25 @@ function handleFile(e) {
             if (Localobj.Row == Remoteobj.Row) {
                 inCabCalc();
             };
+            
         }; // end of for loop
         // 
         // 
         // Beginning of code to write info to new workbook and trigger a download
         // 
         //  
+        /* original data */
+        const filename = "NewSS_Plan.xlsx";
+        const ws_name = "SS_CablePlan";
+
         const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, worksheet);
+        const ws = XLSX.utils.json_to_sheet(jsonSheet);
 
-        /* write workbook (use type 'binary') */
-        var wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'binary' });
+        /* add worksheet to workbook */
+        XLSX.utils.book_append_sheet(wb, ws, ws_name);
 
-        /* generate a download */
-        function s2ab(s) {
-            var buf = new ArrayBuffer(s.length);
-            var view = new Uint8Array(buf);
-            for (var i = 0; i != s.length; ++i) view[i] = s.charCodeAt(i) & 0xFF;
-            return buf;
-        }
-
-        saveAs(new Blob([s2ab(wbout)], { type: "application/octet-stream" }), "sheetjs.xlsx");
+        /* write workbook */
+        XLSX.writeFile(wb, filename);
 
     };
 
