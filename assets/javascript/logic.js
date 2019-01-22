@@ -20,8 +20,8 @@ function handleFile(e) {
         const worksheet = workbook.Sheets[first_sheet_name];
 
         // end result. uploaded file formated into json
-        const jsonSheet = XLSX.utils.sheet_to_json(worksheet);
-
+        let jsonSheet = XLSX.utils.sheet_to_json(worksheet);
+        console.log(jsonSheet);
         // For loop to iterate through each object that is made. Each line in the speadsheet is an object
         for (let i = 0; i < jsonSheet.length; i++) {
 
@@ -66,6 +66,11 @@ function handleFile(e) {
                 Port: RemotePort,
                 Type: cableType
             };
+
+            if(Remoteobj.Port == 'NextAvailable') {
+                throw console.error('Please assign port first');
+                
+            }
             // console.log(Localobj);
             // console.log(Remoteobj);
 
@@ -134,24 +139,16 @@ function handleFile(e) {
                 GapAdder();
 
                 // take length in inches and converts to feet
-                const inCabLength = LengthIn / 12;
-                const inCabMeter = inCabLength * .3048;
-
+                const inCabLength = Math.ceil(LengthIn / 12);
+                const inCabMeter = Math.ceil(inCabLength * .3048);
+                
                 const typeConvert = () => {
                     if (Localobj.Type == "Copper") {
-                        if (!worksheet["A1"]) worksheet["A1"] = {};
-                        worksheet["A1"].t = "s";
-                        worksheet["A1"].v = "issue1124";
-                        jsonSheet.LengthVal = {inCabLength};
-                        console.log(jsonSheet);
-                        console.log(inCabLength + ' FT in cab copper connection');
+                        jsonSheet[i]['Length'] = inCabLength;
+                        console.log(inCabLength + " FT Copper Connection!");
                     } else if (Localobj.Type == "Fiber") {
-                        if (!worksheet["A1"]) worksheet["A1"] = {};
-                        worksheet["A1"].t = "s";
-                        worksheet["A1"].v = "issue1124";
-                        jsonSheet.LengthVal = {inCabLength};
-                        console.log(jsonSheet);
-                        console.log(inCabMeter + ' Meter in cab Fiber connection');
+                        jsonSheet[i]['Length'] = inCabMeter;
+                        console.log(inCabMeter + " M Fiber Connection!");
                     }
                 }
                 typeConvert();
@@ -161,8 +158,8 @@ function handleFile(e) {
             if (Localobj.Row == Remoteobj.Row) {
                 inCabCalc();
             };
-            
         }; // end of for loop
+
         // 
         // 
         // Beginning of code to write info to new workbook and trigger a download
@@ -171,7 +168,7 @@ function handleFile(e) {
         /* original data */
         const filename = "NewSS_Plan.xlsx";
         const ws_name = "SS_CablePlan";
-
+        console.log(jsonSheet);
         const wb = XLSX.utils.book_new();
         const ws = XLSX.utils.json_to_sheet(jsonSheet);
 
