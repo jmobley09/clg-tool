@@ -7,11 +7,11 @@ function handleFile(e) {
     // defines variable for uploaded file
     const files = e.target.files, f = files[0];
     const reader = new FileReader();
+    const fileName = files[0].name;
 
     // Function that determines what to do with uploaded file
     reader.onload = function (e) {
         const data = e.target.result;
-
         if (!rABS) data = new Uint8Array(data);
 
         // variable to pull data and pasrse through xlsx.js library
@@ -144,10 +144,12 @@ function handleFile(e) {
                 
                 const typeConvert = () => {
                     if (Localobj.Type == "Copper") {
-                        jsonSheet[i]['Length'] = inCabLength;
+                        jsonSheet[i]['Cable Type'] = "Copper";
+                        jsonSheet[i]['Run1'] = inCabLength + 'ft';
                         console.log(inCabLength + " FT Copper Connection!");
                     } else if (Localobj.Type == "Fiber") {
-                        jsonSheet[i]['Length'] = inCabMeter;
+                        jsonSheet[i]['Cable Type'] = "Fiber";
+                        jsonSheet[i]['Run1'] = inCabMeter + 'm';
                         console.log(inCabMeter + " M Fiber Connection!");
                     }
                 }
@@ -159,14 +161,10 @@ function handleFile(e) {
                 inCabCalc();
             };
         }; // end of for loop
-
-        // 
         // 
         // Beginning of code to write info to new workbook and trigger a download
         // 
-        //  
-        /* original data */
-        const filename = "NewSS_Plan.xlsx";
+        const filename = "SS_" + fileName;
         const ws_name = "SS_CablePlan";
         console.log(jsonSheet);
         const wb = XLSX.utils.book_new();
