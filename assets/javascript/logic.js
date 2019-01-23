@@ -1,4 +1,11 @@
 
+$('#NextModal').modal({ show: false });
+
+// required modules
+const constructors = require('./constructors');
+
+console.log(constructors);
+
 const rABS = true; // true: readAsBinaryString ; false: readAsArrayBuffer
 
 // main function loader for when file is uploaded for length calculation
@@ -67,13 +74,6 @@ function handleFile(e) {
                 Type: cableType
             };
 
-            if(Remoteobj.Port == 'NextAvailable') {
-                throw console.error('Please assign port first');
-                
-            }
-            // console.log(Localobj);
-            // console.log(Remoteobj);
-
             // Calculations for length
             // All variables stored in Inches
             const ruWidth = 2; // each RU is 2 in
@@ -86,6 +86,12 @@ function handleFile(e) {
 
             let inCabLength = 0;
             let outCabLength = 0;
+
+            if (jsonSheet[i]['R. Port'] == 'NextAvailable') {
+                $('#NextModal').modal('show');
+                console.log('test');
+                throw " ";
+            }
 
             // Code block calculating Fiber connections that go out of cab
             const outCabCalc = () => {
@@ -119,7 +125,7 @@ function handleFile(e) {
                 const fistRU = (52 - Localobj.RU) * ruWidth;
                 const secondRU = (52 - Remoteobj.RU) * ruWidth;
 
-                // Logic that adds the necessary gaps between the rows that have them
+                // Adds the necessary gaps between the rows that have them
                 let LengthIn = 0;
                 const GapAdder = () => {
                     if (Localobj.Cab <= 10 && (Remoteobj.Cab >= 11 && Remoteobj.Cab <= 25)) {
@@ -141,7 +147,8 @@ function handleFile(e) {
                 // take length in inches and converts to feet
                 const inCabLength = Math.ceil(LengthIn / 12);
                 const inCabMeter = Math.ceil(inCabLength * .3048);
-                
+
+                // takes in type of cable and adds to json object along with length
                 const typeConvert = () => {
                     if (Localobj.Type == "Copper") {
                         jsonSheet[i]['Cable Type'] = "Copper";
