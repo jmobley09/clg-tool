@@ -2,9 +2,9 @@
 $('#NextModal').modal({ show: false });
 
 // required modules
-const constructors = require('./constructors');
+// const constructors = require('./constructors');
 
-console.log(constructors);
+// console.log(constructors);
 
 const rABS = true; // true: readAsBinaryString ; false: readAsArrayBuffer
 
