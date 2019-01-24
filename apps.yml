@@ -10,4 +10,3 @@ ss-clg-app:
         gracePeriod: 60
         listeners:
         - name: public
-          loadBalancer: true
