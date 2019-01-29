@@ -2,7 +2,21 @@
 $('#NextModal').modal({ show: false });
 
 // required modules
-// const constructors = require('./constructors');
+requirejs.config({
+    //Pass the top-level main.js/index.js require
+    //function to requirejs so that node modules
+    //are loaded relative to the top-level JS file.
+    nodeRequire: require
+});
+
+requirejs(['./liu_sql.js'],
+function   (foo,   bar) {
+    //foo and bar are loaded according to requirejs
+    //config, but if not found, then node's require
+    //is used to load the module.
+});
+
+console.log(sql.results);
 
 // console.log(constructors);
 
@@ -93,16 +107,8 @@ function handleFile(e) {
                 throw " ";
             }
 
-            // Code block calculating Fiber connections that go out of cab
-            const outCabCalc = () => {
-            };
-
-            if (Localobj.Row !== Remoteobj.Row && Localobj.Type == "Fiber") {
-                outCabCalc();
-            };
-
             // Code block calculating In Cab Copper Connections
-            const inCabCalc = () => {
+            const CabCalc = () => {
 
                 // Calculates the number of cabs apart, and returns only positive numbers
                 let cabLength = 0;
@@ -153,20 +159,14 @@ function handleFile(e) {
                     if (Localobj.Type == "Copper") {
                         jsonSheet[i]['Cable Type'] = "Copper";
                         jsonSheet[i]['Run1'] = inCabLength + 'ft';
-                        console.log(inCabLength + " FT Copper Connection!");
                     } else if (Localobj.Type == "Fiber") {
                         jsonSheet[i]['Cable Type'] = "Fiber";
                         jsonSheet[i]['Run1'] = inCabMeter + 'm';
-                        console.log(inCabMeter + " M Fiber Connection!");
                     }
                 }
                 typeConvert();
             };
-
-            // if rows are equal and cable type is copper runs in calc for length. Its called in cab but it does all of in row
-            if (Localobj.Row == Remoteobj.Row) {
-                inCabCalc();
-            };
+            CabCalc();
         }; // end of for loop
         // 
         // Beginning of code to write info to new workbook and trigger a download

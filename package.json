@@ -1,0 +1,20 @@
+{
+  "name": "clg-tool",
+  "version": "1.0.0",
+  "description": "ss clg tool",
+  "main": "index.js",
+  "dependencies": {
+    "mysql": "^2.16.0",
+    "requirejs": "^2.3.6"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.pie.apple.com:joshua-mobley/clg-tool.git"
+  },
+  "author": "Joshua Mobley",
+  "license": "ISC"
+}
