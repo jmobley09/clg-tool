@@ -1,24 +1,4 @@
-
 $('#NextModal').modal({ show: false });
-
-// required modules
-requirejs.config({
-    //Pass the top-level main.js/index.js require
-    //function to requirejs so that node modules
-    //are loaded relative to the top-level JS file.
-    nodeRequire: require
-});
-
-requirejs(['./liu_sql.js'],
-function   (foo,   bar) {
-    //foo and bar are loaded according to requirejs
-    //config, but if not found, then node's require
-    //is used to load the module.
-});
-
-console.log(sql.results);
-
-// console.log(constructors);
 
 const rABS = true; // true: readAsBinaryString ; false: readAsArrayBuffer
 
@@ -43,9 +23,10 @@ function handleFile(e) {
         // end result. uploaded file formated into json
         let jsonSheet = XLSX.utils.sheet_to_json(worksheet);
         console.log(jsonSheet);
+        
         // For loop to iterate through each object that is made. Each line in the speadsheet is an object
         for (let i = 0; i < jsonSheet.length; i++) {
-
+            
             // var to change number to correct cell, used @ type convert function
             const cellNum = i + 2;
 
@@ -131,6 +112,7 @@ function handleFile(e) {
                 const fistRU = (52 - Localobj.RU) * ruWidth;
                 const secondRU = (52 - Remoteobj.RU) * ruWidth;
 
+
                 // Adds the necessary gaps between the rows that have them
                 let LengthIn = 0;
                 const GapAdder = () => {
@@ -154,6 +136,10 @@ function handleFile(e) {
                 const inCabLength = Math.ceil(LengthIn / 12);
                 const inCabMeter = Math.ceil(inCabLength * .3048);
 
+                function mdfCalc() {
+
+                }
+
                 // takes in type of cable and adds to json object along with length
                 const typeConvert = () => {
                     if (Localobj.Type == "Copper") {
@@ -162,6 +148,7 @@ function handleFile(e) {
                     } else if (Localobj.Type == "Fiber") {
                         jsonSheet[i]['Cable Type'] = "Fiber";
                         jsonSheet[i]['Run1'] = inCabMeter + 'm';
+                        mdfCalc();
                     }
                 }
                 typeConvert();

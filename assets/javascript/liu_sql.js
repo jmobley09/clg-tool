@@ -1,5 +1,6 @@
 const mysql = require("mysql");
 
+var QueryResults;
 const connection = mysql.createConnection({
   host: "localhost",
 
@@ -13,31 +14,22 @@ const connection = mysql.createConnection({
   password: "Futurpilot09",
   database: "liu_db"
 });
-
-let queryResults = {};
-
-function connect() {
+const sqlResults = function () {
   connection.connect(function (err) {
     if (err) throw err;
     console.log("connected as id " + connection.threadId);
-    // console.log(afterconnection(1500,25));
-    afterconnection(1100, 1500, 25);
-  });
-};
-function afterconnection(hall, dhall, row) {
+    connection.query('SELECT * FROM `Locations`', function (error, results, fields) {
+      // error will be an Error if one occurred during the query
+      // results will contain the results of the query
+      // fields will contain information about the returned results fields (if any)
+      console.log(results);
+      QueryResults = results;
+    });
 
-  connection.query('SELECT * FROM `locations` WHERE `hall` = ? and`destination_hall` = ? and `destination_row` = ?', [hall, dhall, row], function (error, results, fields) {
-    queryResults = results[0];
-    returnResults();
+    connection.end();
   });
-  connection.end();
-};
-connect();
-function returnResults() {
-  console.log(queryResults);
-  return queryResults;
 }
-
+sqlResults();
 module.exports = {
-  results: returnResults()
+  results: sqlResults
 }

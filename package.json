@@ -4,8 +4,7 @@
   "description": "ss clg tool",
   "main": "index.js",
   "dependencies": {
-    "mysql": "^2.16.0",
-    "requirejs": "^2.3.6"
+    "mysql": "^2.16.0"
   },
   "devDependencies": {},
   "scripts": {
