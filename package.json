@@ -1,18 +1,16 @@
 {
-  "name": "clg-tool",
+  "name": "ss-clg",
   "version": "1.0.0",
-  "description": "ss clg tool",
-  "main": "index.js",
+  "description": "Cable length generator for SS teams",
+  "main": "server.js",
   "dependencies": {
-    "mysql": "^2.16.0"
+    "express": "^4.16.3"
   },
   "devDependencies": {},
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git@github.pie.apple.com:joshua-mobley/clg-tool.git"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js",
+    "watch": "nodemon server.js"
   },
   "author": "Joshua Mobley",
   "license": "ISC"
