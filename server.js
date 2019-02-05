@@ -46,57 +46,57 @@ app.get("/", function(req, res) {
   res.sendFile(path.join(__dirname, "/html/index.html"));
 });
 
-// sends users to the features page
-app.get("/features", function(req, res) {
-  res.sendFile(path.join(__dirname, "/html/features.html"));
-});
+// // sends users to the features page
+// app.get("/features", function(req, res) {
+//   res.sendFile(path.join(__dirname, "/html/features.html"));
+// });
 
-// send users to the schedule page
-app.get("/features", function(req, res) {
-  res.sendFile(path.join(__dirname, "/html/schedule.html"));
-});
+// // send users to the schedule page
+// app.get("/features", function(req, res) {
+//   res.sendFile(path.join(__dirname, "/html/schedule.html"));
+// });
 
-// sends users to the bugs page
-app.get("/features", function(req, res) {
-  res.sendFile(path.join(__dirname, "/html/bugs.html"));
-});
+// // sends users to the bugs page
+// app.get("/features", function(req, res) {
+//   res.sendFile(path.join(__dirname, "/html/bugs.html"));
+// });
 
-// Displays all characters
-app.get("/api/characters", function(req, res) {
-  return res.json(characters);
-});
+// // Displays all characters
+// app.get("/api/characters", function(req, res) {
+//   return res.json(characters);
+// });
 
-// Displays a single character, or returns false
-app.get("/api/characters/:character", function(req, res) {
-  var chosen = req.params.character;
+// // Displays a single character, or returns false
+// app.get("/api/characters/:character", function(req, res) {
+//   var chosen = req.params.character;
 
-  console.log(chosen);
+//   console.log(chosen);
 
-  for (var i = 0; i < characters.length; i++) {
-    if (chosen === characters[i].routeName) {
-      return res.json(characters[i]);
-    }
-  }
+//   for (var i = 0; i < characters.length; i++) {
+//     if (chosen === characters[i].routeName) {
+//       return res.json(characters[i]);
+//     }
+//   }
 
-  return res.json(false);
-});
+//   return res.json(false);
+// });
 
-// Create New Characters - takes in JSON input
-app.post("/api/characters", function(req, res) {
-  // req.body hosts is equal to the JSON post sent from the user
-  // This works because of our body parsing middleware
-  var newcharacter = req.body;
+// // Create New Characters - takes in JSON input
+// app.post("/api/characters", function(req, res) {
+//   // req.body hosts is equal to the JSON post sent from the user
+//   // This works because of our body parsing middleware
+//   var newcharacter = req.body;
 
-  // Using a RegEx Pattern to remove spaces from newCharacter
-  // You can read more about RegEx Patterns later https://www.regexbuddy.com/regex.html
-  // newcharacter.routeName = newcharacter.name.replace(/\s+/g, "").toLowerCase();
+//   // Using a RegEx Pattern to remove spaces from newCharacter
+//   // You can read more about RegEx Patterns later https://www.regexbuddy.com/regex.html
+//   // newcharacter.routeName = newcharacter.name.replace(/\s+/g, "").toLowerCase();
 
-  console.log(newcharacter);
+//   console.log(newcharacter);
 
-  characters.push(newcharacter);
+//   characters.push(newcharacter);
 
-  res.json(newcharacter);
-});
+//   res.json(newcharacter);
+// });
 
 // Starts the server to begin listening
 // =============================================================
