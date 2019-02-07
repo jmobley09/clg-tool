@@ -66,6 +66,8 @@ app.get("/api/characters", function(req, res) {
   return res.json(characters);
 });
 
+app.use('/assets', express.static('assets'));
+
 // Displays a single character, or returns false
 app.get("/api/characters/:character", function(req, res) {
   var chosen = req.params.character;
