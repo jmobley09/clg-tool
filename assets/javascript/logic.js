@@ -186,10 +186,10 @@ function handleFile(e) {
         const ws = XLSX.utils.json_to_sheet(jsonSheet);
 
         /* add worksheet to workbook */
-        // XLSX.utils.book_append_sheet(wb, ws, ws_name);
+        XLSX.utils.book_append_sheet(wb, ws, ws_name);
 
-        // /* write workbook */
-        // XLSX.writeFile(wb, filename);
+        /* write workbook */
+        XLSX.writeFile(wb, filename);
 
     };
 
