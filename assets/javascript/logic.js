@@ -23,10 +23,12 @@ function handleFile(e) {
         // end result. uploaded file formated into json
         let jsonSheet = XLSX.utils.sheet_to_json(worksheet);
         console.log(jsonSheet);
-        
+
+        const ftlengtharr = [];
+        const mtlengtharr = [];
         // For loop to iterate through each object that is made. Each line in the speadsheet is an object
         for (let i = 0; i < jsonSheet.length; i++) {
-            
+
             // var to change number to correct cell, used @ type convert function
             const cellNum = i + 2;
 
@@ -34,16 +36,28 @@ function handleFile(e) {
             const LocalArr = jsonSheet[i]['L. Location'].split('.');
             const RemoteArr = jsonSheet[i]['R. Location'].split('.');
             const LocalPort = jsonSheet[i]['L. Port'].split('/');
-            const RemotePort = jsonSheet[i]['L. Port'].split('/');
+            const RemotePort = jsonSheet[i]['R. Port'].split('/');
             let cableType = 'Cable';
 
             // Finds the correct cable type and changes it as needed
             const CableType = () => {
-                if (jsonSheet[i]['Port Type'] == '100G' || jsonSheet[i]['Port Type'] == '40G' && LocalPort != 'Ethernet 1' || RemotePort != 'Ethernet 1') {
-                    cableType = 'Fiber';
-                } else if (jsonSheet[i]['Port Type'] == '10G' || jsonSheet[i]['Port Type'] == '1G' || jsonSheet[i]['Port Type'] == '10G' && LocalPort == 'Ethernet 1' || RemotePort == 'Ethernet 1') {
+
+                // determines management cables 
+                if (jsonSheet[i]['L. Port'].includes('Management') || jsonSheet[i]['R. Port'].includes('Management') && jsonSheet[i]['Port Type'] == '1G' || jsonSheet[i]['Port Type'] == '10G') {
                     cableType = 'Copper';
-                };
+                    // determines console cables 
+                } else if (jsonSheet[i]['L. Port'].includes('console') || jsonSheet[i]['R. Port'].includes('console') && jsonSheet[i]['Port Type'] == '1G' || jsonSheet[i]['Port Type'] == '10G') {
+                    cableType = 'Copper';
+                    // determines all copper uplinks to port 49
+                } else if (jsonSheet[i]['L. Port'].includes('Ethernet49') || jsonSheet[i]['R. Port'].includes('Ethernet49') && jsonSheet[i]['Port Type'] == '1G' || jsonSheet[i]['Port Type'] == '10G') {
+                    cableType = 'Copper';
+                    // determines all copper uplinks to port 51
+                } else if (jsonSheet[i]['L. Port'].includes('Ethernet51') || jsonSheet[i]['R. Port'].includes('Ethernet51') && jsonSheet[i]['Port Type'] == '1G' || jsonSheet[i]['Port Type'] == '10G') {
+                    cableType = 'Copper';
+                    // determines single mode fiber
+                } else if (jsonSheet[i]['Port Type'] == '100G' || jsonSheet[i]['Slot'] != '1' || jsonSheet[i]['R. Slot'] != '1') {
+                    cableType = 'Fiber';
+                }
             };
             CableType();
 
@@ -69,6 +83,8 @@ function handleFile(e) {
                 Type: cableType
             };
 
+            console.log(Localobj.Type);
+
             // Calculations for length
             // All variables stored in Inches
             const ruWidth = 2; // each RU is 2 in
@@ -84,7 +100,6 @@ function handleFile(e) {
 
             if (jsonSheet[i]['R. Port'] == 'NextAvailable') {
                 $('#NextModal').modal('show');
-                console.log('test');
                 throw " ";
             }
 
@@ -145,30 +160,36 @@ function handleFile(e) {
                     if (Localobj.Type == "Copper") {
                         jsonSheet[i]['Cable Type'] = "Copper";
                         jsonSheet[i]['Run1'] = inCabLength + 'ft';
+                        ftlengtharr.push(inCabLength);
+
                     } else if (Localobj.Type == "Fiber") {
                         jsonSheet[i]['Cable Type'] = "Fiber";
                         jsonSheet[i]['Run1'] = inCabMeter + 'm';
+                        mtlengtharr.push(inCabMeter);
                         mdfCalc();
                     }
                 }
                 typeConvert();
             };
             CabCalc();
+            // console.log('Copper Lengths');
+            // console.log(ftlengtharr);
+            // console.log('Fiber Lengths');
+            // console.log(mtlengtharr);
         }; // end of for loop
         // 
         // Beginning of code to write info to new workbook and trigger a download
         // 
         const filename = "SS_" + fileName;
         const ws_name = "SS_CablePlan";
-        console.log(jsonSheet);
         const wb = XLSX.utils.book_new();
         const ws = XLSX.utils.json_to_sheet(jsonSheet);
 
         /* add worksheet to workbook */
-        XLSX.utils.book_append_sheet(wb, ws, ws_name);
+        // XLSX.utils.book_append_sheet(wb, ws, ws_name);
 
-        /* write workbook */
-        XLSX.writeFile(wb, filename);
+        // /* write workbook */
+        // XLSX.writeFile(wb, filename);
 
     };
 
