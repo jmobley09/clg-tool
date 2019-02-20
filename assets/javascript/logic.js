@@ -22,6 +22,7 @@ function handleFile(e) {
 
         // end result. uploaded file formated into json
         let jsonSheet = XLSX.utils.sheet_to_json(worksheet);
+        let labelSheet = [];
         console.log(jsonSheet);
 
         const ftlengtharr = [];
@@ -202,15 +203,31 @@ function handleFile(e) {
 
 
             function createLabel() {
-                const srcLabel = Localobj.Hall + '.' + Localobj.Row + '.' + Localobj.Cab + ' U' + Localobj.RU;
-                const srcPort = Localobj.Slot + '/' + Localobj.Port; 
-                const rmtPort = Localobj.Slot + '/' + Localobj.Port; 
-                const rmtLabel = Remoteobj.Hall + '.' + Remoteobj.Row + '.' + Remoteobj.Cab + ' U' + Remoteobj.RU; 
+                let labelobj = {};
 
-                console.log(srcLabel);
-                console.log(srcPort);
-                console.log(rmtLabel);
-                console.log(rmtPort);
+                // defines what will be used from objects to generate the source side of the label
+                let srcLabel = Localobj.Hall + '.' + Localobj.Row + '.' + Localobj.Cab + ' U' + Localobj.RU;
+                let srcPort = Localobj.Slot + '/' + Localobj.Port; 
+                
+                // defines what will be used from objects to generate the destination side of the label
+                let rmtPort = Localobj.Slot + '/' + Localobj.Port; 
+                
+                // correct port so that the label will print easier to read for source
+                if(Localobj.Slot == "Null" || Localobj.Slot == "Undefined" || Localobj.Slot == "1") {
+                    srcPort = Localobj.Port[0];
+                }
+                
+                // correct port so that the label will print easier to read for destination
+                if(Remoteobj.Slot == "Null" || Remoteobj.Slot == "Undefined" || Remoteobj.Slot == "1") {
+                    let rmtLabel = Remoteobj.Hall + '.' + Remoteobj.Row + '.' + Remoteobj.Cab + ' U' + Remoteobj.RU;
+                    rmtPort = Remoteobj.Port[0];
+                }
+                
+                labelobj.srcLabel = srcLabel;
+                labelobj.srcPort = srcPort;
+                labelobj.rmtLabel = rmtLabel + ' ' + rmtPort;
+
+                labelSheet[i] = labelobj;
             }
             createLabel();
             
@@ -220,14 +237,19 @@ function handleFile(e) {
         // 
         const filename = "SS_" + fileName;
         const ws_name = "SS_CablePlan";
+        const ws_name_label = "Labels";
+
         const wb = XLSX.utils.book_new();
         const ws = XLSX.utils.json_to_sheet(jsonSheet);
+        const ws_labels = XLSX.utils.json_to_sheet(labelSheet);
+        console.log(labelSheet);
 
         /* add worksheet to workbook */
-        // XLSX.utils.book_append_sheet(wb, ws, ws_name);
+        XLSX.utils.book_append_sheet(wb, ws, ws_name);
+        XLSX.utils.book_append_sheet(wb, ws_labels, ws_name_label);
 
-        // /* write workbook */
-        // XLSX.writeFile(wb, filename);
+        /* write workbook */
+        XLSX.writeFile(wb, filename);
 
     };
 
