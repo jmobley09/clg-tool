@@ -88,9 +88,6 @@ function handleFile(e) {
                 Port: RemotePort,
                 Type: cableType
             };
-
-            console.log(Localobj);
-            console.log(Remoteobj);
             
             // Calculations for length
             // All variables stored in Inches
@@ -206,9 +203,16 @@ function handleFile(e) {
 
             function createLabel() {
                 const srcLabel = Localobj.Hall + '.' + Localobj.Row + '.' + Localobj.Cab + ' U' + Localobj.RU;
-                const srcPort = Localobj.Port; 
-                const rmtLabel = Remoteobj.Hall + '.' + Remoteobj.Row + '.' + Remoteobj.Cab + ' U' + Remoteobj.RU + " "  + Remoteobj.Port; 
+                const srcPort = Localobj.Slot + '/' + Localobj.Port; 
+                const rmtPort = Localobj.Slot + '/' + Localobj.Port; 
+                const rmtLabel = Remoteobj.Hall + '.' + Remoteobj.Row + '.' + Remoteobj.Cab + ' U' + Remoteobj.RU; 
+
+                console.log(srcLabel);
+                console.log(srcPort);
+                console.log(rmtLabel);
+                console.log(rmtPort);
             }
+            createLabel();
             
         }; // end of for loop
         // 
