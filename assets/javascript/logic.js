@@ -34,9 +34,13 @@ function handleFile(e) {
 
             // Pulls remote and local locations and breaks into Arrays
             const LocalArr = jsonSheet[i]['L. Location'].split('.');
-            const RemoteArr = jsonSheet[i]['R. Location'].split('.');
             const LocalPort = jsonSheet[i]['L. Port'].split('/');
+            const LocalSlot = jsonSheet[i]['L. Slot'].split(' ');
+
+            const RemoteArr = jsonSheet[i]['R. Location'].split('.');
             const RemotePort = jsonSheet[i]['R. Port'].split('/');
+            const RemoteSlot = jsonSheet[i]['R. Slot'].split(' ');
+
             let cableType = 'Cable';
 
             // Finds the correct cable type and changes it as needed
@@ -68,6 +72,7 @@ function handleFile(e) {
                 Row: parseFloat(LocalArr[5]),
                 Cab: parseFloat(LocalArr[6]),
                 RU: parseFloat(LocalArr[7]),
+                Slot: LocalSlot[1] || 1,
                 Port: LocalPort,
                 Type: cableType
             };
@@ -79,12 +84,14 @@ function handleFile(e) {
                 Row: parseFloat(RemoteArr[5]),
                 Cab: parseFloat(RemoteArr[6]),
                 RU: parseFloat(RemoteArr[7]),
+                Slot: RemoteSlot[1] || 1,
                 Port: RemotePort,
                 Type: cableType
             };
 
-            console.log(Localobj.Type);
-
+            console.log(Localobj);
+            console.log(Remoteobj);
+            
             // Calculations for length
             // All variables stored in Inches
             const ruWidth = 2; // each RU is 2 in
@@ -172,10 +179,37 @@ function handleFile(e) {
                 typeConvert();
             };
             CabCalc();
-            // console.log('Copper Lengths');
-            // console.log(ftlengtharr);
-            // console.log('Fiber Lengths');
-            // console.log(mtlengtharr);
+
+            // sorts all the lengths that were added into either the ft length array or the meter length arr
+            // creates a second array with total of each instance of the unique values
+            function addlengths(arr) {
+                let a = [];
+                let b = [];
+                let prev;
+
+                arr.sort();
+                for (let i = 0; i < arr.length; i++) {
+                    if (arr[i] !== prev) {
+                        a.push(arr[i]);
+                        b.push(1);
+                    } else {
+                        b[b.length - 1]++;
+                    }
+                    prev = arr[i];
+                }
+
+                return [a, b];
+            };
+            // console.log(addlengths(ftlengtharr));
+            // console.log(addlengths(mtlengtharr));
+
+
+            function createLabel() {
+                const srcLabel = Localobj.Hall + '.' + Localobj.Row + '.' + Localobj.Cab + ' U' + Localobj.RU;
+                const srcPort = Localobj.Port; 
+                const rmtLabel = Remoteobj.Hall + '.' + Remoteobj.Row + '.' + Remoteobj.Cab + ' U' + Remoteobj.RU + " "  + Remoteobj.Port; 
+            }
+            
         }; // end of for loop
         // 
         // Beginning of code to write info to new workbook and trigger a download
@@ -186,10 +220,10 @@ function handleFile(e) {
         const ws = XLSX.utils.json_to_sheet(jsonSheet);
 
         /* add worksheet to workbook */
-        XLSX.utils.book_append_sheet(wb, ws, ws_name);
+        // XLSX.utils.book_append_sheet(wb, ws, ws_name);
 
-        /* write workbook */
-        XLSX.writeFile(wb, filename);
+        // /* write workbook */
+        // XLSX.writeFile(wb, filename);
 
     };
 
