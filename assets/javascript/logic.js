@@ -22,7 +22,10 @@ function handleFile(e) {
 
         // end result. uploaded file formated into json
         let jsonSheet = XLSX.utils.sheet_to_json(worksheet);
+
+        // Variables for storing labels and lengths. Used to write Json data to excel file
         let labelSheet = [];
+        let lengthSheet = [];
         console.log(jsonSheet);
 
         // Variables for storing the cable types
@@ -265,23 +268,40 @@ function handleFile(e) {
             createLabel();
 
         }; // end of for loop
+        const lenHead = [
+            ['QTY-MM', 'Fiber-MM', 'QTY-SM', 'Fiber-SM', 'QTY-GRN', 'Green CAT6', 'QTY-YLW', 'Yellow CAT6', 'QTY-AOC', 'AOC', 'QTY-DAC', 'DAC']
+        ];
+        const lenData = [];
         
-        
-        function objcreate(arr) {
-            const addLen = addlengths(arr);
-            const arrLen = addLen[0];
-            const arrCount = addLen[1];
+        function objcreate(arr, measure) {
             const arrobj = {};
+            const newarr = addlengths(arr);
+            const arrLen = newarr[0];
+            const arrCon = newarr[1];
+            
+            for (let i = 0; i < arr.length; i++) {
+                arrobj[(arrLen[i] + measure)] = arrCon[i];
+            }
+            return arrobj;
+        }
+        const consobj = objcreate(consCables, 'ft');
+        const mgmtobj = objcreate(mgmtCables, 'ft');
+        const upobj = objcreate(uplinkCables, 'ft');
+        const smobj = objcreate(smfibCables, 'm');
+        const mmobj = objcreate(smfibCables, 'm');
+        
+        function addData(data) {
+            const lenobj = {};
 
-            for (i = 0; i < arr.length; i ++) {
-                arrobj[arrLen[i]] = arrCount[i];
+            for (var k in data) {
+                if (data.hasOwnProperty(k)) {
+                    lenobj[]
+                }
             }
             
-            return arrobj;
-            
+             
         }
 
-        console.log(objcreate(consCables));
         // 
         // Beginning of code to write info to new workbook and trigger a download
         // 
@@ -290,25 +310,15 @@ function handleFile(e) {
         const ws_name_label = "Labels";
         const ws_name_length = 'Lengths';
 
+
+
         // Variables to convert data into sheets
         const wb = XLSX.utils.book_new();
         const ws = XLSX.utils.json_to_sheet(jsonSheet);
         const ws_labels = XLSX.utils.json_to_sheet(labelSheet);
 
-        // Data For Lengths sheet -- Seperate due to numerous variables required
-        const Heading = [
-            ['Cables']
-        ];
-        const lenData = [
-            { length: '10' }
-        ];
-
-        const ws_lengths = XLSX.utils.aoa_to_sheet(Heading);
-        XLSX.utils.sheet_add_json(ws_lengths, lenData, {
-            header: ["length"],
-            skipHeader: true,
-            origin: -1
-        });
+        const ws_lengths = XLSX.utils.aoa_to_sheet(lenHead);
+        XLSX.utils.sheet_add_json(ws, lengthSheet);
 
         //add worksheets to workbook
         XLSX.utils.book_append_sheet(wb, ws, ws_name);
