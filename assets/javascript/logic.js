@@ -25,8 +25,14 @@ function handleFile(e) {
         let labelSheet = [];
         console.log(jsonSheet);
 
-        const ftlengtharr = [];
-        const mtlengtharr = [];
+        // Variables for storing the cable types
+        const consCables = [];
+        const mgmtCables = [];
+        const uplinkCables = [];
+        const smfibCables = [];
+        const mmfibCables = [];
+
+
         // For loop to iterate through each object that is made. Each line in the speadsheet is an object
         for (let i = 0; i < jsonSheet.length; i++) {
 
@@ -49,19 +55,21 @@ function handleFile(e) {
 
                 // determines management cables 
                 if (jsonSheet[i]['L. Port'].includes('Management') || jsonSheet[i]['R. Port'].includes('Management') && jsonSheet[i]['Port Type'] == '1G' || jsonSheet[i]['Port Type'] == '10G') {
-                    cableType = 'Copper';
+                    cableType = 'mgmt';
                     // determines console cables 
                 } else if (jsonSheet[i]['L. Port'].includes('console') || jsonSheet[i]['R. Port'].includes('console') && jsonSheet[i]['Port Type'] == '1G' || jsonSheet[i]['Port Type'] == '10G') {
-                    cableType = 'Copper';
+                    cableType = 'cons';
                     // determines all copper uplinks to port 49
                 } else if (jsonSheet[i]['L. Port'].includes('Ethernet49') || jsonSheet[i]['R. Port'].includes('Ethernet49') && jsonSheet[i]['Port Type'] == '1G' || jsonSheet[i]['Port Type'] == '10G') {
-                    cableType = 'Copper';
+                    cableType = 'uplink';
                     // determines all copper uplinks to port 51
                 } else if (jsonSheet[i]['L. Port'].includes('Ethernet51') || jsonSheet[i]['R. Port'].includes('Ethernet51') && jsonSheet[i]['Port Type'] == '1G' || jsonSheet[i]['Port Type'] == '10G') {
-                    cableType = 'Copper';
+                    cableType = 'uplink';
                     // determines single mode fiber
                 } else if (jsonSheet[i]['Port Type'] == '100G' || jsonSheet[i]['Slot'] != '1' || jsonSheet[i]['R. Slot'] != '1') {
-                    cableType = 'Fiber';
+                    cableType = 'smfib';
+                } else {
+                    cableType = 'mmfib';
                 }
             };
             CableType();
@@ -89,7 +97,7 @@ function handleFile(e) {
                 Port: RemotePort,
                 Type: cableType
             };
-            
+
             // Calculations for length
             // All variables stored in Inches
             const ruWidth = 2; // each RU is 2 in
@@ -162,15 +170,27 @@ function handleFile(e) {
 
                 // takes in type of cable and adds to json object along with length
                 const typeConvert = () => {
-                    if (Localobj.Type == "Copper") {
+                    if (Localobj.Type == "cons") {
                         jsonSheet[i]['Cable Type'] = "Copper";
                         jsonSheet[i]['Run1'] = inCabLength + 'ft';
-                        ftlengtharr.push(inCabLength);
-
-                    } else if (Localobj.Type == "Fiber") {
+                        consCables.push(inCabLength);
+                    } else if (Localobj.Type == "mgmt") {
+                        jsonSheet[i]['Cable Type'] = "Copper";
+                        jsonSheet[i]['Run1'] = inCabLength + 'ft';
+                        mgmtCables.push(inCabLength);
+                    } if (Localobj.Type == "uplink") {
+                        jsonSheet[i]['Cable Type'] = "Copper";
+                        jsonSheet[i]['Run1'] = inCabLength + 'ft';
+                        uplinkCables.push(inCabLength);
+                    } else if (Localobj.Type == "smfib") {
                         jsonSheet[i]['Cable Type'] = "Fiber";
                         jsonSheet[i]['Run1'] = inCabMeter + 'm';
-                        mtlengtharr.push(inCabMeter);
+                        smfibCables.push(inCabMeter);
+                        mdfCalc();
+                    } else if (Localobj.Type == "mmfib") {
+                        jsonSheet[i]['Cable Type'] = "Fiber";
+                        jsonSheet[i]['Run1'] = inCabMeter + 'm';
+                        mmfibCables.push(inCabMeter);
                         mdfCalc();
                     }
                 }
@@ -198,58 +218,105 @@ function handleFile(e) {
 
                 return [a, b];
             };
-            // console.log(addlengths(ftlengtharr));
-            // console.log(addlengths(mtlengtharr));
 
 
             function createLabel() {
+
+
                 let labelobj = {};
+                let labelobj2 = {};
 
                 // defines what will be used from objects to generate the source side of the label
                 let srcLabel = Localobj.Hall + '.' + Localobj.Row + '.' + Localobj.Cab + ' U' + Localobj.RU;
-                let srcPort = Localobj.Slot + '/' + Localobj.Port; 
-                
+                let srcPort = Localobj.Slot + '/' + Localobj.Port;
+
                 // defines what will be used from objects to generate the destination side of the label
-                let rmtPort = Localobj.Slot + '/' + Localobj.Port; 
-                
+                let rmtPort = Localobj.Slot + '/' + Localobj.Port;
+
                 // correct port so that the label will print easier to read for source
-                if(Localobj.Slot == "Null" || Localobj.Slot == "Undefined" || Localobj.Slot == "1") {
+                if (Localobj.Slot == "Null" || Localobj.Slot == "Undefined" || Localobj.Slot == "1") {
                     srcPort = Localobj.Port[0];
                 }
-                
+
                 // correct port so that the label will print easier to read for destination
-                if(Remoteobj.Slot == "Null" || Remoteobj.Slot == "Undefined" || Remoteobj.Slot == "1") {
-                    let rmtLabel = Remoteobj.Hall + '.' + Remoteobj.Row + '.' + Remoteobj.Cab + ' U' + Remoteobj.RU;
+                if (Remoteobj.Slot == "Null" || Remoteobj.Slot == "Undefined" || Remoteobj.Slot == "1") {
+                    rmtLabel = Remoteobj.Hall + '.' + Remoteobj.Row + '.' + Remoteobj.Cab + ' U' + Remoteobj.RU;
                     rmtPort = Remoteobj.Port[0];
                 }
-                
+
                 labelobj.srcLabel = srcLabel;
                 labelobj.srcPort = srcPort;
                 labelobj.rmtLabel = rmtLabel + ' ' + rmtPort;
 
-                labelSheet[i] = labelobj;
+                labelobj2.srcLabel = rmtLabel;
+                labelobj2.srcPort = rmtPort;
+                labelobj2.rmtLabel = srcLabel + ' ' + srcPort;
+
+                let n = 1;
+                let j = 0;
+
+                if (i == n) {
+                    let j = i + i;
+                    n = + 2;
+                    labelSheet[j] = labelobj;
+                    labelSheet[n] = labelobj2;
+                }
             }
             createLabel();
-            
+
         }; // end of for loop
+        
+        
+        function objcreate(arr) {
+            const addLen = addlengths(arr);
+            const arrLen = addLen[0];
+            const arrCount = addLen[1];
+            const arrobj = {};
+
+            for (i = 0; i < arr.length; i ++) {
+                arrobj[arrLen[i]] = arrCount[i];
+            }
+            
+            return arrobj;
+            
+        }
+
+        console.log(objcreate(consCables));
         // 
         // Beginning of code to write info to new workbook and trigger a download
         // 
         const filename = "SS_" + fileName;
         const ws_name = "SS_CablePlan";
         const ws_name_label = "Labels";
+        const ws_name_length = 'Lengths';
 
+        // Variables to convert data into sheets
         const wb = XLSX.utils.book_new();
         const ws = XLSX.utils.json_to_sheet(jsonSheet);
         const ws_labels = XLSX.utils.json_to_sheet(labelSheet);
-        console.log(labelSheet);
 
-        /* add worksheet to workbook */
+        // Data For Lengths sheet -- Seperate due to numerous variables required
+        const Heading = [
+            ['Cables']
+        ];
+        const lenData = [
+            { length: '10' }
+        ];
+
+        const ws_lengths = XLSX.utils.aoa_to_sheet(Heading);
+        XLSX.utils.sheet_add_json(ws_lengths, lenData, {
+            header: ["length"],
+            skipHeader: true,
+            origin: -1
+        });
+
+        //add worksheets to workbook
         XLSX.utils.book_append_sheet(wb, ws, ws_name);
         XLSX.utils.book_append_sheet(wb, ws_labels, ws_name_label);
+        XLSX.utils.book_append_sheet(wb, ws_lengths, ws_name_length);
 
-        /* write workbook */
-        XLSX.writeFile(wb, filename);
+        //writes workbook
+        // XLSX.writeFile(wb, filename);
 
     };
 
