@@ -245,6 +245,9 @@ function handleFile(e) {
                 if (Remoteobj.Slot == "Null" || Remoteobj.Slot == "Undefined" || Remoteobj.Slot == "1") {
                     rmtLabel = Remoteobj.Hall + '.' + Remoteobj.Row + '.' + Remoteobj.Cab + ' U' + Remoteobj.RU;
                     rmtPort = Remoteobj.Port[0];
+                }else {
+                    rmtLabel = Remoteobj.Hall + '.' + Remoteobj.Row + '.' + Remoteobj.Cab + ' U' + Remoteobj.RU;
+                    rmtPort =  Remoteobj.Slot + '/' + Remoteobj.Port[0];
                 }
 
                 labelobj.srcLabel = srcLabel;
@@ -258,12 +261,17 @@ function handleFile(e) {
                 let n = 1;
                 let j = 0;
 
-                if (i == n) {
+                if (i == 0 ) {
+                    n = i + 1;
+                    labelSheet[i] = labelobj;
+                    labelSheet[n] = labelobj2;
+                } else {
                     let j = i + i;
-                    n = + 2;
+                    n = j + 1;
                     labelSheet[j] = labelobj;
                     labelSheet[n] = labelobj2;
                 }
+                // console.log(labelSheet);
             }
             createLabel();
 
@@ -272,6 +280,7 @@ function handleFile(e) {
             ['QTY-MM', 'Fiber-MM', 'QTY-SM', 'Fiber-SM', 'QTY-GRN', 'Green CAT6', 'QTY-YLW', 'Yellow CAT6', 'QTY-AOC', 'AOC', 'QTY-DAC', 'DAC']
         ];
         const lenData = [];
+
 
         function objcreate(arr, measure) {
             const arrobj = {};
@@ -301,14 +310,17 @@ function handleFile(e) {
         };
 
         function addData(obj, type, count) {
+            // console.log(obj);
             for (let i = 0; i < lenData.length; i++) {
                 $.each(obj, function (key, value) {
-                    lenData[i][type] = key;
-                    lenData[i][count] = value;
+                    // console.log(lenData[i]);
+                    // console.log(obj[i]);
+                    lenData[i][type] = obj[key];
+                    lenData[i][count] = obj[value];
                 });
             };
         };
-
+        // console.log(lenData);
         // variables to store if cable arrays have lengths
         const conslen = consCables.length;
         const mgmtlen = mgmtCables.length;
@@ -339,7 +351,6 @@ function handleFile(e) {
         if (inital) {
             addData(mgmtobj, 'GRY-C6', 'QTY-GRY');
         }
-        console.log(lenData);
         // 
         // Beginning of code to write info to new workbook and trigger a download
         // 
