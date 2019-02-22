@@ -229,26 +229,46 @@ function handleFile(e) {
                 let labelobj = {};
                 let labelobj2 = {};
 
-                // defines what will be used from objects to generate the source side of the label
+                let srcPort = '';
+                let rmtPort = '';
+                
+                
+                // // defines what will be used from objects to generate the source side of the label
                 let srcLabel = Localobj.Hall + '.' + Localobj.Row + '.' + Localobj.Cab + ' U' + Localobj.RU;
-                let srcPort = Localobj.Slot + '/' + Localobj.Port;
+                // let srcPort = Localobj.Slot + '/' + Localobj.Port;
 
-                // defines what will be used from objects to generate the destination side of the label
-                let rmtPort = Localobj.Slot + '/' + Localobj.Port;
+                // // defines what will be used from objects to generate the destination side of the label
+                let rmtLabel = Remoteobj.Hall + '.' + Remoteobj.Row + '.' + Remoteobj.Cab + ' U' + Remoteobj.RU;
+                // let rmtPort = Remoteobj.Slot + '/' + Remoteobj.Port;
 
                 // correct port so that the label will print easier to read for source
                 if (Localobj.Slot == "Null" || Localobj.Slot == "Undefined" || Localobj.Slot == "1") {
                     srcPort = Localobj.Port[0];
+                } else if (Localobj.Port.length == 2) {
+                    srcPort = Localobj.Port[0] + '/' + Localobj.Port[1];
+                } else if (Localobj.Port.length > 2) {
+                    srcPort = Localobj.Slot + '/' + Localobj.Port[0] + '/' + Localobj.Port[1];
+                } else if (Localobj.Port == 'Management1' || Localobj.Port == 'Management' || Localobj.Port == 'Management2') {
+                    srcPort = 'Mgmt'
+                } else if (Localobj.Port == 'Console1' || Localobj.Port == 'Console2' || Localobj.Port == 'Console') {
+                    srcPort = 'Con'
                 }
 
                 // correct port so that the label will print easier to read for destination
                 if (Remoteobj.Slot == "Null" || Remoteobj.Slot == "Undefined" || Remoteobj.Slot == "1") {
-                    rmtLabel = Remoteobj.Hall + '.' + Remoteobj.Row + '.' + Remoteobj.Cab + ' U' + Remoteobj.RU;
                     rmtPort = Remoteobj.Port[0];
-                }else {
-                    rmtLabel = Remoteobj.Hall + '.' + Remoteobj.Row + '.' + Remoteobj.Cab + ' U' + Remoteobj.RU;
-                    rmtPort =  Remoteobj.Slot + '/' + Remoteobj.Port[0];
+                } else if (Remoteobj.Port.length == 2) {
+                    rmtPort = Remoteobj.Port[0] + '/' + Remoteobj.Port[1];
+                } else if (Remoteobj.Port.length > 2) {
+                    rmtPort = Remoteobj.Slot + '/' + Remoteobj.Port[0] + '/' + Remoteobj.Port[1];
+                } else if (Remoteobj.Port == 'Management1' || Remoteobj.Port == 'Management') {
+                    rmtPort = 'Mgmt'
+                } else if (Remoteobj.Port == 'Console1' || Remoteobj.Port == 'Console2' || Remoteobj.Port == 'Console') {
+                    rmtPort = 'Con'
                 }
+
+                console.log("rmt" + Remoteobj.Port);
+                console.log("src" + Localobj.Port);
 
                 labelobj.srcLabel = srcLabel;
                 labelobj.srcPort = srcPort;
@@ -261,7 +281,7 @@ function handleFile(e) {
                 let n = 1;
                 let j = 0;
 
-                if (i == 0 ) {
+                if (i == 0) {
                     n = i + 1;
                     labelSheet[i] = labelobj;
                     labelSheet[n] = labelobj2;
@@ -271,14 +291,13 @@ function handleFile(e) {
                     labelSheet[j] = labelobj;
                     labelSheet[n] = labelobj2;
                 }
-                // console.log(labelSheet);
             }
             createLabel();
 
         }; // end of for loop
-        const lenHead = [
-            ['QTY-MM', 'Fiber-MM', 'QTY-SM', 'Fiber-SM', 'QTY-GRN', 'Green CAT6', 'QTY-YLW', 'Yellow CAT6', 'QTY-AOC', 'AOC', 'QTY-DAC', 'DAC']
-        ];
+
+        console.log(labelSheet);
+
         const lenData = [];
 
 
@@ -310,17 +329,14 @@ function handleFile(e) {
         };
 
         function addData(obj, type, count) {
-            // console.log(obj);
             for (let i = 0; i < lenData.length; i++) {
                 $.each(obj, function (key, value) {
-                    // console.log(lenData[i]);
-                    // console.log(obj[i]);
                     lenData[i][type] = obj[key];
                     lenData[i][count] = obj[value];
                 });
             };
         };
-        // console.log(lenData);
+
         // variables to store if cable arrays have lengths
         const conslen = consCables.length;
         const mgmtlen = mgmtCables.length;
