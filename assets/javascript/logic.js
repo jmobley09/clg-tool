@@ -301,18 +301,13 @@ function handleFile(e) {
         };
 
         function addData(obj, type, count) {
-            let lenobj = [];
-            $.each(obj, function (key, value) {
-                let tempobj = {};
-                tempobj[type] = key;
-                tempobj[count] = value;
-                lenobj.push(tempobj);
-            })
-
-            let name = lenobj[0].key;
-            console.log(name);
-            
-        }
+            for (let i = 0; i < lenData.length; i++) {
+                $.each(obj, function (key, value) {
+                    lenData[i][type] = key;
+                    lenData[i][count] = value;
+                });
+            };
+        };
 
         // variables to store if cable arrays have lengths
         const conslen = consCables.length;
@@ -367,7 +362,7 @@ function handleFile(e) {
         XLSX.utils.book_append_sheet(wb, ws_lengths, ws_name_length);
 
         //writes workbook
-        // XLSX.writeFile(wb, filename);
+        XLSX.writeFile(wb, filename);
 
     };
 
