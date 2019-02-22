@@ -272,36 +272,79 @@ function handleFile(e) {
             ['QTY-MM', 'Fiber-MM', 'QTY-SM', 'Fiber-SM', 'QTY-GRN', 'Green CAT6', 'QTY-YLW', 'Yellow CAT6', 'QTY-AOC', 'AOC', 'QTY-DAC', 'DAC']
         ];
         const lenData = [];
-        
+
         function objcreate(arr, measure) {
             const arrobj = {};
             const newarr = addlengths(arr);
             const arrLen = newarr[0];
             const arrCon = newarr[1];
-            
+
             for (let i = 0; i < arr.length; i++) {
                 arrobj[(arrLen[i] + measure)] = arrCon[i];
             }
             return arrobj;
         }
+
         const consobj = objcreate(consCables, 'ft');
         const mgmtobj = objcreate(mgmtCables, 'ft');
         const upobj = objcreate(uplinkCables, 'ft');
         const smobj = objcreate(smfibCables, 'm');
         const mmobj = objcreate(smfibCables, 'm');
-        
-        function addData(data) {
-            const lenobj = {};
 
-            for (var k in data) {
-                if (data.hasOwnProperty(k)) {
-                    lenobj[]
-                }
-            }
+        function createData(obj, type, count) {
+            $.each(obj, function (key, value) {
+                const lenobj = {};
+                lenobj[type] = key;
+                lenobj[count] = value;
+                lenData.push(lenobj);
+            })
+        };
+
+        function addData(obj, type, count) {
+            let lenobj = [];
+            $.each(obj, function (key, value) {
+                let tempobj = {};
+                tempobj[type] = key;
+                tempobj[count] = value;
+                lenobj.push(tempobj);
+            })
+
+            let name = lenobj[0].key;
+            console.log(name);
             
-             
         }
 
+        // variables to store if cable arrays have lengths
+        const conslen = consCables.length;
+        const mgmtlen = mgmtCables.length;
+        const uplen = uplinkCables.length;
+        const smlen = smfibCables.length;
+        const mmlen = mmfibCables.length;
+
+        // used to keep track if the first object in the json data has been made
+        createData(consobj, "GRN-C6", 'QTY-GRN');
+        let inital = false;
+
+        if (lenData.length > 0) {
+            inital = true;
+        } else if (lenData.length > 0) {
+            createData(mgmtobj);
+            inital = true;
+        } else if (lenData.length > 0) {
+            createData(upobj);
+            inital = true;
+        } else if (lenData.length > 0) {
+            createData(smobj);
+            inital = true;
+        } else if (lenData.length > 0) {
+            createData(mmobj);
+            inital = true;
+        }
+
+        if (inital) {
+            addData(mgmtobj, 'GRY-C6', 'QTY-GRY');
+        }
+        console.log(lenData);
         // 
         // Beginning of code to write info to new workbook and trigger a download
         // 
@@ -316,9 +359,7 @@ function handleFile(e) {
         const wb = XLSX.utils.book_new();
         const ws = XLSX.utils.json_to_sheet(jsonSheet);
         const ws_labels = XLSX.utils.json_to_sheet(labelSheet);
-
-        const ws_lengths = XLSX.utils.aoa_to_sheet(lenHead);
-        XLSX.utils.sheet_add_json(ws, lengthSheet);
+        const ws_lengths = XLSX.utils.json_to_sheet(lenData);
 
         //add worksheets to workbook
         XLSX.utils.book_append_sheet(wb, ws, ws_name);
