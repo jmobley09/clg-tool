@@ -222,7 +222,7 @@ function handleFile(e) {
                 return [a, b];
             };
 
-
+            // Creates the label for each row and appends to sheet
             function createLabel() {
 
                 // ---------------------- Defined Variables
@@ -280,6 +280,7 @@ function handleFile(e) {
                     rmtPort = Remoteobj.Slot + '/' + rmtname[rmtname.length - 1];
                 }
 
+                // Objects that will be used to print to sheet
                 labelobj.srcLabel = srcLabel;
                 labelobj.srcPort = srcPort;
                 labelobj.rmtLabel = rmtLabel + ' ' + rmtPort;
@@ -291,6 +292,7 @@ function handleFile(e) {
                 let n = 1;
                 let j = 0;
 
+                // Logic to paste sheet to appropiate row without overwriting the current row
                 if (i == 0) {
                     n = i + 1;
                     labelSheet[i] = labelobj;
@@ -301,22 +303,23 @@ function handleFile(e) {
                     labelSheet[j] = labelobj;
                     labelSheet[n] = labelobj2;
                 }
-                // console.log(Localobj.Port);
-                // console.log(Remoteobj.Port);
             }
             createLabel();
 
         }; // end of for loop
-        console.log(labelSheet);
 
+        // Variable to hold the JSON to append to sheet for lengths
         const lenData = [];
 
+        // Calls function to seperate total of lengths into two seperate arrays
+        // Array 0 holds the unique length & array 1 holds the # of times it is repeated
         const conlengths = addlengths(consCables);
         const mgmtlengths = addlengths(mgmtCables);
         const uplengths = addlengths(uplinkCables);
         const smlengths = addlengths(smfibCables);
         const mmlengths = addlengths(mmfibCables);
 
+        // Template for creating the objects to be added to the json
         const template = {
             'GRN-C6': 0,
             'GRN-QTY': 0,
@@ -330,6 +333,8 @@ function handleFile(e) {
             'MM-QTY': 0
         };
 
+        // var to the length of the array for each cable type and the var to find the longest array
+        // used to determine the number of times to add objects to the json
         const arrlengths = [
             conlengths[0].length,
             mgmtlengths[0].length,
@@ -340,6 +345,7 @@ function handleFile(e) {
         
         const inumerate = Math.max.apply(Math, arrlengths);
 
+        // creates each object to add to the json
         function objectcreate() {
             for (let i = 0; i < inumerate; i++) {
 
@@ -399,6 +405,14 @@ function handleFile(e) {
     if (rABS) reader.readAsBinaryString(f); else reader.readAsArrayBuffer(f);
 };
 
+/*
+
+From this point on all pretains to calling the appropiate function for when one of the following happens:
+    Speadsheet is dropped to page
+    Speadsheet is dragged to page
+    Speadsheet is uploaded to page
+
+*/
 const upload = document.getElementById('upload');
 upload.addEventListener('change', handleFile, false);
 
