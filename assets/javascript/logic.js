@@ -6,7 +6,7 @@ const rABS = true; // true: readAsBinaryString ; false: readAsArrayBuffer
 function handleFile(e) {
 
     // defines variable for uploaded file
-    const files = e.target.files, f = files[0];
+    const files = e.target.files || e.dataTransfer.files, f = files[0];
     const reader = new FileReader();
     const fileName = files[0].name;
 
@@ -392,7 +392,7 @@ function handleFile(e) {
         XLSX.utils.book_append_sheet(wb, ws_lengths, ws_name_length);
 
         //writes workbook
-        // XLSX.writeFile(wb, filename);
+        XLSX.writeFile(wb, filename);
 
     };
 
@@ -401,3 +401,26 @@ function handleFile(e) {
 
 const upload = document.getElementById('upload');
 upload.addEventListener('change', handleFile, false);
+
+const drop = document.getElementById('Drop');
+(function() {
+	if(!drop.addEventListener) return;
+
+	function handleDrop(e) {
+		e.stopPropagation();
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'copy';
+        handleFile(e);
+	}
+
+	function handleDragover(e) {
+		e.stopPropagation();
+		e.preventDefault();
+        e.dataTransfer.dropEffect = 'copy';
+        handleFile(e);
+	}
+
+	drop.addEventListener('dragenter', handleDragover, false);
+	drop.addEventListener('dragover', handleDragover, false);
+	drop.addEventListener('drop', handleDrop, false);
+})();
