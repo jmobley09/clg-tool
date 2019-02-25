@@ -255,7 +255,7 @@ function handleFile(e) {
                 } else if (Localobj.Port == 'Console1' || Localobj.Port == 'Console2' || Localobj.Port == 'Console') {
                     srcPort = srcintro;
                 }
-                
+
                 // defines what will be used from objects to generate the destination side of the label
                 // correct port so that the label will print easier to read for destination
                 let rmtLabel = Remoteobj.Hall + '.' + Remoteobj.Row + '.' + Remoteobj.Cab + ' U' + Remoteobj.RU;
@@ -298,77 +298,69 @@ function handleFile(e) {
 
         }; // end of for loop
 
-        console.log(labelSheet);
-
         const lenData = [];
 
+        const conlengths = addlengths(consCables);
+        const mgmtlengths = addlengths(mgmtCables);
+        const uplengths = addlengths(uplinkCables);
+        const smlengths = addlengths(smfibCables);
+        const mmlengths = addlengths(mmfibCables);
 
-        function objcreate(arr, measure) {
-            const arrobj = {};
-            const newarr = addlengths(arr);
-            const arrLen = newarr[0];
-            const arrCon = newarr[1];
+        const template = {
+            'GRN-C6': 0,
+            'GRN-QTY': 0,
+            'GRY-C6': 0,
+            'GRY-QTY': 0,
+            'BLU-C6': 0,
+            'BLU-QTY': 0,
+            'SM-LCLC': 0,
+            'SM-QTY': 0,
+            'MM-LCLC': 0,
+            'MM-QTY': 0
+        };
 
-            for (let i = 0; i < arr.length; i++) {
-                arrobj[(arrLen[i] + measure)] = arrCon[i];
-            }
-            return arrobj;
-        }
+        const arrlengths = [
+            conlengths[0].length,
+            mgmtlengths[0].length,
+            uplengths[0].length,
+            smlengths[0].length,
+            mmlengths[0].length,
+        ];
+        
+        const inumerate = Math.max.apply(Math, arrlengths);
 
-        const consobj = objcreate(consCables, 'ft');
-        const mgmtobj = objcreate(mgmtCables, 'ft');
-        const upobj = objcreate(uplinkCables, 'ft');
-        const smobj = objcreate(smfibCables, 'm');
-        const mmobj = objcreate(smfibCables, 'm');
+        function objectcreate() {
+            for (let i = 0; i < inumerate; i++) {
 
-        function createData(obj, type, count) {
-            $.each(obj, function (key, value) {
-                const lenobj = {};
-                lenobj[type] = key;
-                lenobj[count] = value;
+                const lenobj = Object.create(template);
+
+                if (conlengths[0].length > 0) {
+                    lenobj['GRN-C6'] = conlengths[0][i];
+                    lenobj['GRN-QTY'] = conlengths[1][i];
+                }
+                if (mgmtlengths[0].length > 0) {
+                    lenobj['GRY-C6'] = mgmtlengths[0][i];
+                    lenobj['GRY-QTY'] = mgmtlengths[1][i];
+                }
+                if (uplengths[0].length > 0) {
+                    lenobj['BLU-C6'] = uplengths[0][i];
+                    lenobj['BLU-QTY'] = uplengths[1][i];
+                }
+                if (smlengths[0].length > 0) {
+                    lenobj['SM-LCLC'] = smlengths[0][i];
+                    lenobj['SM-QTY'] = smlengths[1][i];
+                }
+                if (mmlengths[0].length > 0) {
+                    lenobj['MM-LCLC'] = mmlengths[0][i];
+                    lenobj['MM-QTY'] = mmlengths[1][i];
+                }
                 lenData.push(lenobj);
-            })
-        };
-
-        function addData(obj, type, count) {
-            for (let i = 0; i < lenData.length; i++) {
-                $.each(obj, function (key, value) {
-                    lenData[i][type] = obj[key];
-                    lenData[i][count] = obj[value];
-                });
-            };
-        };
-
-        // variables to store if cable arrays have lengths
-        const conslen = consCables.length;
-        const mgmtlen = mgmtCables.length;
-        const uplen = uplinkCables.length;
-        const smlen = smfibCables.length;
-        const mmlen = mmfibCables.length;
-
-        // used to keep track if the first object in the json data has been made
-        createData(consobj, "GRN-C6", 'QTY-GRN');
-        let inital = false;
-
-        if (lenData.length > 0) {
-            inital = true;
-        } else if (lenData.length > 0) {
-            createData(mgmtobj);
-            inital = true;
-        } else if (lenData.length > 0) {
-            createData(upobj);
-            inital = true;
-        } else if (lenData.length > 0) {
-            createData(smobj);
-            inital = true;
-        } else if (lenData.length > 0) {
-            createData(mmobj);
-            inital = true;
+            }
         }
+        objectcreate();
 
-        if (inital) {
-            addData(mgmtobj, 'GRY-C6', 'QTY-GRY');
-        }
+        console.log(lenData);
+
         // 
         // Beginning of code to write info to new workbook and trigger a download
         // 
