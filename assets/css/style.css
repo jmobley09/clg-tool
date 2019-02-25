@@ -2,10 +2,11 @@ h1 {
     text-align: center;
 }
 .container {
-    margin: 1%;
+	margin: 1%;
+	text-align: center;
 }
 
-#drop{
+#Drop{
 	border:2px dashed #bbb;
 	-moz-border-radius:5px;
 	-webkit-border-radius:5px;
@@ -15,5 +16,9 @@ h1 {
 	font:20pt bold,"Vollkorn";color:#bbb
 }
 img {
+	margin: 1%;
+}
+
+#upload {
 	margin: 1%;
 }
