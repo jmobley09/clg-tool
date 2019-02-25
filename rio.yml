@@ -1,0 +1,14 @@
+schemaVersion: 2.0
+
+pipelines:
+  - branchName: master
+    build:
+      template: buildozer:v1:publish
+    deploy:
+      pie:
+        environment: dev
+        availabilityZones:
+          - usspk05
+  - branchName: master
+    build:
+      template: buildozer:v1:prb

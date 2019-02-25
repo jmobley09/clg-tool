@@ -1,0 +1,12 @@
+ss-clg-app:
+  processes:
+    web:
+      memory: 1 GiB
+      command: ./start-web.sh
+      health:
+        type: tcp
+        listener: public
+        interval: 10
+        gracePeriod: 60
+        listeners:
+        - name: public

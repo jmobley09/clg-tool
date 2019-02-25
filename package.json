@@ -1,0 +1,18 @@
+{
+  "name": "ss-clg",
+  "version": "1.0.0",
+  "description": "Cable length generator for SS teams",
+  "main": "server.js",
+  "dependencies": {
+    "express": "^4.16.3",
+    "mysql": "^2.16.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js",
+    "watch": "nodemon server.js"
+  },
+  "author": "Joshua Mobley",
+  "license": "ISC"
+}
