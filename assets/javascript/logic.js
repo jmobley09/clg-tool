@@ -244,32 +244,40 @@ function handleFile(e) {
                 // correct port so that the label will print easier to read for source
                 let srcLabel = Localobj.Hall + '.' + Localobj.Row + '.' + Localobj.Cab + ' U' + Localobj.RU;
 
-                if (Localobj.Slot == "Null" || Localobj.Slot == "Undefined" || Localobj.Slot == "1") {
+                if (Localobj.Port == "Management1" || Localobj.Port == 'Management') {
+                    srcPort = 'Mgmt';
+                } else if (Localobj.Port == 'Management2') {
+                    srcPort = 'Mgmt' + srcname[srcname.length - 1];
+                } else if (Localobj.Port == 'Console2') {
+                    srcPort = 'Con' + srcname[srcname.length - 1];
+                } else if (Localobj.Port == 'Console' || Localobj.Port == 'Console1') {
+                    srcPort = 'Con';
+                } else if (Localobj.Slot == "Null" || Localobj.Slot == "Undefined" || Localobj.Slot == "1") {
                     srcPort = srcintro;
-                } else if (Localobj.Port.length == 2) {
+                } else if (Localobj.Port.length == 2 && Localobj.Port != "Management1" || Localobj.Port != 'Management2' || Localobj.Port != 'Console1' || Localobj.Port != 'Console2') {
                     srcPort = srcintro + '/' + Localobj.Port[1];
                 } else if (Localobj.Port.length > 2) {
-                    srcPort = Localobj.Slot + '/' + srcname[srcname.length - 1] + '/' + Localobj.Port[1];
-                } else if (Localobj.Port == 'Management1' || Localobj.Port == 'Management' || Localobj.Port == 'Management2') {
-                    srcPort = srcintro;
-                } else if (Localobj.Port == 'Console1' || Localobj.Port == 'Console2' || Localobj.Port == 'Console') {
-                    srcPort = srcintro;
-                }
+                    srcPort = Localobj.Slot + '/' + srcname[srcname.length - 1];
+                } 
 
                 // defines what will be used from objects to generate the destination side of the label
                 // correct port so that the label will print easier to read for destination
                 let rmtLabel = Remoteobj.Hall + '.' + Remoteobj.Row + '.' + Remoteobj.Cab + ' U' + Remoteobj.RU;
 
-                if (Remoteobj.Slot == "Null" || Remoteobj.Slot == "Undefined" || Remoteobj.Slot == "1") {
+                if (Remoteobj.Port == 'Management1' || Remoteobj.Port == 'Management') {
+                    rmtPort = 'Mgmt';
+                } else if (Remoteobj.Port == 'Management2') {
+                    rmtPort = 'Mgmt' + rmtname[rmtname.length - 1];
+                } else if (Remoteobj.Port == 'Console2') {
+                    rmtPort = 'Con' + rmtname[rmtname.length - 1];
+                } else if (Remoteobj.Port == 'Console1' || Remoteobj.Port == 'Console') {
+                    rmtPort = 'Con';
+                } else if (Remoteobj.Slot == "Null" || Remoteobj.Slot == "Undefined" || Remoteobj.Slot == "1") {
                     rmtPort = rmtintro;
-                } else if (Remoteobj.Port.length == 2) {
+                } else if (Remoteobj.Port.length == 2 && Remoteobj.Port != "Management1" || Remoteobj.Port != 'Management2' || Remoteobj.Port != 'Console1' || Remoteobj.Port != 'Console2') {
                     rmtPort = rmtintro + '/' + Remoteobj.Port[1];
                 } else if (Remoteobj.Port.length > 2) {
-                    rmtPort = Remoteobj.Slot + '/' + rmtname[rmtname.length - 1] + '/' + Remoteobj.Port[1];
-                } else if (Remoteobj.Port == 'Management1' || Remoteobj.Port == 'Management') {
-                    rmtPort = rmtintro;
-                } else if (Remoteobj.Port == 'Console1' || Remoteobj.Port == 'Console2' || Remoteobj.Port == 'Console') {
-                    rmtPort = rmtintro;
+                    rmtPort = Remoteobj.Slot + '/' + rmtname[rmtname.length - 1];
                 }
 
                 labelobj.srcLabel = srcLabel;
@@ -293,10 +301,13 @@ function handleFile(e) {
                     labelSheet[j] = labelobj;
                     labelSheet[n] = labelobj2;
                 }
+                // console.log(Localobj.Port);
+                // console.log(Remoteobj.Port);
             }
             createLabel();
 
         }; // end of for loop
+        console.log(labelSheet);
 
         const lenData = [];
 
@@ -359,8 +370,6 @@ function handleFile(e) {
         }
         objectcreate();
 
-        console.log(lenData);
-
         // 
         // Beginning of code to write info to new workbook and trigger a download
         // 
@@ -383,7 +392,7 @@ function handleFile(e) {
         XLSX.utils.book_append_sheet(wb, ws_lengths, ws_name_length);
 
         //writes workbook
-        XLSX.writeFile(wb, filename);
+        // XLSX.writeFile(wb, filename);
 
     };
 
