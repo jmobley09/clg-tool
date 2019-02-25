@@ -46,28 +46,62 @@ function handleFile(e) {
             };
             
             // Pulls local locations and breaks into Arrays
-            const LocalArr = jsonSheet[i]['L. Location'].split('.') || jsonSheet[i]['Location'].split('.');
-            const LocalPort = jsonSheet[i]['L. Port'].split('/') || jsonSheet[i]['Port'].split('/');
-            const LocalSlot = jsonSheet[i]['L. Slot'].split(' ') || jsonSheet[i]['Slot'].split(' ');
 
-            if (typeof jsonSheet[i]['L. Port'] == "string") {
-                RemotePort = jsonSheet[i]['L. Port'].split('/');
-            } else if (typeof jsonSheet[i]['L. Port'] == "number") {
-                RemotePort = ['Ethernet' + jsonSheet[i]['L. Port']];
+            let LocalArr = '';
+            if (jsonSheet[i]['Location']){
+                LocalArr = jsonSheet[i]['Location'].split('.');
+            } else if (jsonSheet[i]['L. Location']){
+                LocalArr = jsonSheet[i]['L. Location'].split('.');
+            };
+
+            let LocalPort = '';
+            if (jsonSheet[i]['Port']){
+                LocalPort = jsonSheet[i]['Port'].split('/');
+            } else if (jsonSheet[i]['L. Port']) {
+                LocalPort = jsonSheet[i]['L. Port'].split('/');
             }
 
-            // Pulls remote locations and breaks into Arrays
-            const RemoteArr = jsonSheet[i]['R. Location'].split('.');
-            const RemoteSlot = jsonSheet[i]['R. Slot'].split(' ');
-            let RemotePort = jsonSheet[i]['R. Port'];
+            let LocalSlot = '';
+            if (jsonSheet[i]['Slot']) {
+                LocalSlot = jsonSheet[i]['Slot'].split(' ');
+            } else if (jsonSheet[i]['L. Slot']) {
+                LocalSlot = jsonSheet[i]['L. Slot'].split(' ');
+            }
 
-            if (typeof jsonSheet[i]['R. Port'] == "string") {
-                RemotePort = jsonSheet[i]['R. Port'].split('/');
-            } else if (typeof jsonSheet[i]['R. Port'] == "number") {
-                RemotePort = ['Ethernet' + jsonSheet[i]['R. Port']];
+            if (typeof jsonSheet[i]['L. Port'] == "string" || typeof jsonSheet[i]['Port'] == "string") {
+                LocalPort = jsonSheet[i]['L. Port'].split('/');
+            } else if (typeof jsonSheet[i]['L. Port'] == "number" || typeof jsonSheet[i]['Port'] == "number") {
+                LocalPort = ['Ethernet' + jsonSheet[i]['L. Port']];
             }
             
-            console.log(RemotePort);
+            // Pulls remote locations and breaks into Arrays
+
+            let RemoteArr = '';
+            if (jsonSheet[i]['Location']){
+                RemoteArr = jsonSheet[i]['Location'].split('.');
+            } else if (jsonSheet[i]['L. Location']){
+                RemoteArr = jsonSheet[i]['L. Location'].split('.');
+            };
+
+            let RemotePort = '';
+            if (jsonSheet[i]['Port']){
+                RemotePort = jsonSheet[i]['Port'].split('/');
+            } else if (jsonSheet[i]['L. Port']) {
+                RemotePort = jsonSheet[i]['L. Port'].split('/');
+            }
+
+            let RemoteSlot = '';
+            if (jsonSheet[i]['Slot']) {
+                RemoteSlot = jsonSheet[i]['Slot'].split(' ');
+            } else if (jsonSheet[i]['L. Slot']) {
+                RemoteSlot = jsonSheet[i]['L. Slot'].split(' ');
+            }
+
+            if (typeof jsonSheet[i]['L. Port'] == "string" || typeof jsonSheet[i]['Port'] == "string") {
+                RemotePort = jsonSheet[i]['L. Port'].split('/');
+            } else if (typeof jsonSheet[i]['L. Port'] == "number" || typeof jsonSheet[i]['Port'] == "number") {
+                RemotePort = ['Ethernet' + jsonSheet[i]['L. Port']];
+            }
 
             let cableType = 'Cable';
             
@@ -75,19 +109,19 @@ function handleFile(e) {
             const CableType = () => {
                 
                 // determines management cables 
-                if (LocalPort.includes('Management') || RemotePort.includes('Management') && jsonSheet[i]['Port Type'] == '1G' || jsonSheet[i]['Port Type'] == '10G') {
+                if (LocalPort[0].includes('Management') || RemotePort[0].includes('Management') && jsonSheet[i]['Port Type'] == '1G' || jsonSheet[i]['Port Type'] == '10G') {
                     cableType = 'mgmt';
                     // determines console cables 
-                } else if (LocalPort.includes('console') || RemotePort.includes('console') && jsonSheet[i]['Port Type'] == '1G' || jsonSheet[i]['Port Type'] == '10G') {
+                } else if (LocalPort[0].includes('console') || RemotePort[0].includes('console') && jsonSheet[i]['Port Type'] == '1G' || jsonSheet[i]['Port Type'] == '10G') {
                     cableType = 'cons';
                     // determines all copper uplinks to port 49
-                } else if (LocalPort.includes('Ethernet49') || RemotePort.includes('Ethernet49') && jsonSheet[i]['Port Type'] == '1G' || jsonSheet[i]['Port Type'] == '10G') {
+                } else if (LocalPort[0].includes('Ethernet49') || RemotePort[0].includes('Ethernet49') && jsonSheet[i]['Port Type'] == '1G' || jsonSheet[i]['Port Type'] == '10G') {
                     cableType = 'uplink';
                     // determines all copper uplinks to port 51
-                } else if (LocalPort.includes('Ethernet51') || RemotePort.includes('Ethernet51') && jsonSheet[i]['Port Type'] == '1G' || jsonSheet[i]['Port Type'] == '10G') {
+                } else if (LocalPort[0].includes('Ethernet51') || RemotePort[0].includes('Ethernet51') && jsonSheet[i]['Port Type'] == '1G' || jsonSheet[i]['Port Type'] == '10G') {
                     cableType = 'uplink';
                     // determines single mode fiber
-                } else if (jsonSheet[i]['Port Type'] == '100G' || LocalSlot != '1' || RemoteSlot != '1') {
+                } else if (jsonSheet[i]['Port Type'] == '100G' || LocalSlot[1] != '1' || RemoteSlot[1] != '1') {
                     cableType = 'smfib';
                 } else {
                     cableType = 'mmfib';
@@ -118,7 +152,7 @@ function handleFile(e) {
                 Port: RemotePort,
                 Type: cableType
             };
-
+            console.log(Localobj.Type);
             // Calculations for length
             // All variables stored in Inches
             const ruWidth = 2; // each RU is 2 in
@@ -415,7 +449,7 @@ function handleFile(e) {
         XLSX.utils.book_append_sheet(wb, ws_lengths, ws_name_length);
 
         //writes workbook
-        // XLSX.writeFile(wb, filename);
+        XLSX.writeFile(wb, filename);
 
     };
 
