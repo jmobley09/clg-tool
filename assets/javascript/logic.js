@@ -1,4 +1,5 @@
 $('#NextModal').modal({ show: false });
+$('#PortModal').modal({ show: false });
 
 const rABS = true; // true: readAsBinaryString ; false: readAsArrayBuffer
 
@@ -39,44 +40,61 @@ function handleFile(e) {
         // For loop to iterate through each object that is made. Each line in the speadsheet is an object
         for (let i = 0; i < jsonSheet.length; i++) {
 
-            // var to change number to correct cell, used @ type convert function
-            const cellNum = i + 2;
+            if (jsonSheet[i]['R. Port'] == 'NextAvailable') {
+                $('#NextModal').modal('show');
+                throw " ";
+            };
+            
+            // Pulls local locations and breaks into Arrays
+            const LocalArr = jsonSheet[i]['L. Location'].split('.') || jsonSheet[i]['Location'].split('.');
+            const LocalPort = jsonSheet[i]['L. Port'].split('/') || jsonSheet[i]['Port'].split('/');
+            const LocalSlot = jsonSheet[i]['L. Slot'].split(' ') || jsonSheet[i]['Slot'].split(' ');
 
-            // Pulls remote and local locations and breaks into Arrays
-            const LocalArr = jsonSheet[i]['L. Location'].split('.');
-            const LocalPort = jsonSheet[i]['L. Port'].split('/');
-            const LocalSlot = jsonSheet[i]['L. Slot'].split(' ');
+            if (typeof jsonSheet[i]['L. Port'] == "string") {
+                RemotePort = jsonSheet[i]['L. Port'].split('/');
+            } else if (typeof jsonSheet[i]['L. Port'] == "number") {
+                RemotePort = ['Ethernet' + jsonSheet[i]['L. Port']];
+            }
 
+            // Pulls remote locations and breaks into Arrays
             const RemoteArr = jsonSheet[i]['R. Location'].split('.');
-            const RemotePort = jsonSheet[i]['R. Port'].split('/');
             const RemoteSlot = jsonSheet[i]['R. Slot'].split(' ');
+            let RemotePort = jsonSheet[i]['R. Port'];
+
+            if (typeof jsonSheet[i]['R. Port'] == "string") {
+                RemotePort = jsonSheet[i]['R. Port'].split('/');
+            } else if (typeof jsonSheet[i]['R. Port'] == "number") {
+                RemotePort = ['Ethernet' + jsonSheet[i]['R. Port']];
+            }
+            
+            console.log(RemotePort);
 
             let cableType = 'Cable';
-
+            
             // Finds the correct cable type and changes it as needed
             const CableType = () => {
-
+                
                 // determines management cables 
-                if (jsonSheet[i]['L. Port'].includes('Management') || jsonSheet[i]['R. Port'].includes('Management') && jsonSheet[i]['Port Type'] == '1G' || jsonSheet[i]['Port Type'] == '10G') {
+                if (LocalPort.includes('Management') || RemotePort.includes('Management') && jsonSheet[i]['Port Type'] == '1G' || jsonSheet[i]['Port Type'] == '10G') {
                     cableType = 'mgmt';
                     // determines console cables 
-                } else if (jsonSheet[i]['L. Port'].includes('console') || jsonSheet[i]['R. Port'].includes('console') && jsonSheet[i]['Port Type'] == '1G' || jsonSheet[i]['Port Type'] == '10G') {
+                } else if (LocalPort.includes('console') || RemotePort.includes('console') && jsonSheet[i]['Port Type'] == '1G' || jsonSheet[i]['Port Type'] == '10G') {
                     cableType = 'cons';
                     // determines all copper uplinks to port 49
-                } else if (jsonSheet[i]['L. Port'].includes('Ethernet49') || jsonSheet[i]['R. Port'].includes('Ethernet49') && jsonSheet[i]['Port Type'] == '1G' || jsonSheet[i]['Port Type'] == '10G') {
+                } else if (LocalPort.includes('Ethernet49') || RemotePort.includes('Ethernet49') && jsonSheet[i]['Port Type'] == '1G' || jsonSheet[i]['Port Type'] == '10G') {
                     cableType = 'uplink';
                     // determines all copper uplinks to port 51
-                } else if (jsonSheet[i]['L. Port'].includes('Ethernet51') || jsonSheet[i]['R. Port'].includes('Ethernet51') && jsonSheet[i]['Port Type'] == '1G' || jsonSheet[i]['Port Type'] == '10G') {
+                } else if (LocalPort.includes('Ethernet51') || RemotePort.includes('Ethernet51') && jsonSheet[i]['Port Type'] == '1G' || jsonSheet[i]['Port Type'] == '10G') {
                     cableType = 'uplink';
                     // determines single mode fiber
-                } else if (jsonSheet[i]['Port Type'] == '100G' || jsonSheet[i]['Slot'] != '1' || jsonSheet[i]['R. Slot'] != '1') {
+                } else if (jsonSheet[i]['Port Type'] == '100G' || LocalSlot != '1' || RemoteSlot != '1') {
                     cableType = 'smfib';
                 } else {
                     cableType = 'mmfib';
                 }
             };
             CableType();
-
+            
             // Object to hold all data of First Location
             const Localobj = {
                 Location: LocalArr[0] + '.' + LocalArr[1] + '.' + LocalArr[2],
@@ -88,7 +106,7 @@ function handleFile(e) {
                 Port: LocalPort,
                 Type: cableType
             };
-
+            
             // Object to hold all data of Second Location
             const Remoteobj = {
                 Location: RemoteArr[0] + '.' + RemoteArr[1] + '.' + RemoteArr[2],
@@ -113,11 +131,6 @@ function handleFile(e) {
 
             let inCabLength = 0;
             let outCabLength = 0;
-
-            if (jsonSheet[i]['R. Port'] == 'NextAvailable') {
-                $('#NextModal').modal('show');
-                throw " ";
-            }
 
             // Code block calculating In Cab Copper Connections
             const CabCalc = () => {
@@ -252,13 +265,15 @@ function handleFile(e) {
                     srcPort = 'Con' + srcname[srcname.length - 1];
                 } else if (Localobj.Port == 'Console' || Localobj.Port == 'Console1') {
                     srcPort = 'Con';
+                } else if (srcname.length == 10) {
+                    srcPort = srcname[0] + srcname[1] + srcname[2] + srcname[srcname.length - 2] + srcname[srcname.length - 1];
                 } else if (Localobj.Slot == "Null" || Localobj.Slot == "Undefined" || Localobj.Slot == "1") {
                     srcPort = srcintro;
                 } else if (Localobj.Port.length == 2 && Localobj.Port != "Management1" || Localobj.Port != 'Management2' || Localobj.Port != 'Console1' || Localobj.Port != 'Console2') {
                     srcPort = srcintro + '/' + Localobj.Port[1];
                 } else if (Localobj.Port.length > 2) {
                     srcPort = Localobj.Slot + '/' + srcname[srcname.length - 1];
-                } 
+                }
 
                 // defines what will be used from objects to generate the destination side of the label
                 // correct port so that the label will print easier to read for destination
@@ -272,6 +287,8 @@ function handleFile(e) {
                     rmtPort = 'Con' + rmtname[rmtname.length - 1];
                 } else if (Remoteobj.Port == 'Console1' || Remoteobj.Port == 'Console') {
                     rmtPort = 'Con';
+                } else if (rmtname.length == 10) {
+                    rmtPort = rmtname[0] + rmtname[1] + rmtname[2] + rmtname[rmtname.length - 2] + rmtname[rmtname.length - 1];
                 } else if (Remoteobj.Slot == "Null" || Remoteobj.Slot == "Undefined" || Remoteobj.Slot == "1") {
                     rmtPort = rmtintro;
                 } else if (Remoteobj.Port.length == 2 && Remoteobj.Port != "Management1" || Remoteobj.Port != 'Management2' || Remoteobj.Port != 'Console1' || Remoteobj.Port != 'Console2') {
@@ -342,7 +359,7 @@ function handleFile(e) {
             smlengths[0].length,
             mmlengths[0].length,
         ];
-        
+
         const inumerate = Math.max.apply(Math, arrlengths);
 
         // creates each object to add to the json
@@ -398,7 +415,7 @@ function handleFile(e) {
         XLSX.utils.book_append_sheet(wb, ws_lengths, ws_name_length);
 
         //writes workbook
-        XLSX.writeFile(wb, filename);
+        // XLSX.writeFile(wb, filename);
 
     };
 
@@ -417,24 +434,24 @@ const upload = document.getElementById('upload');
 upload.addEventListener('change', handleFile, false);
 
 const drop = document.getElementById('Drop');
-(function() {
-	if(!drop.addEventListener) return;
+(function () {
+    if (!drop.addEventListener) return;
 
-	function handleDrop(e) {
-		e.stopPropagation();
+    function handleDrop(e) {
+        e.stopPropagation();
         e.preventDefault();
         e.dataTransfer.dropEffect = 'copy';
         handleFile(e);
-	}
+    }
 
-	function handleDragover(e) {
-		e.stopPropagation();
-		e.preventDefault();
+    function handleDragover(e) {
+        e.stopPropagation();
+        e.preventDefault();
         e.dataTransfer.dropEffect = 'copy';
         handleFile(e);
-	}
+    }
 
-	drop.addEventListener('dragenter', handleDragover, false);
-	drop.addEventListener('dragover', handleDragover, false);
-	drop.addEventListener('drop', handleDrop, false);
+    drop.addEventListener('dragenter', handleDragover, false);
+    drop.addEventListener('dragover', handleDragover, false);
+    drop.addEventListener('drop', handleDrop, false);
 })();
