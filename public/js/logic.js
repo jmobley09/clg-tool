@@ -44,57 +44,89 @@ function handleFile(e) {
                 $('#NextModal').modal('show');
                 throw " ";
             };
-            
-            // Pulls local locations and breaks into Arrays
-            const LocalArr = jsonSheet[i]['L. Location'].split('.') || jsonSheet[i]['Location'].split('.');
-            const LocalPort = jsonSheet[i]['L. Port'].split('/') || jsonSheet[i]['Port'].split('/');
-            const LocalSlot = jsonSheet[i]['L. Slot'].split(' ') || jsonSheet[i]['Slot'].split(' ');
 
-            if (typeof jsonSheet[i]['L. Port'] == "string") {
-                RemotePort = jsonSheet[i]['L. Port'].split('/');
-            } else if (typeof jsonSheet[i]['L. Port'] == "number") {
-                RemotePort = ['Ethernet' + jsonSheet[i]['L. Port']];
+            // Pulls local locations and breaks into Arrays
+
+            let LocalArr = '';
+
+            if (jsonSheet[i]['Location']) {
+                LocalArr = jsonSheet[i]['Location'].split('.');
+            } else if (jsonSheet[i]['L. Location']) {
+                LocalArr = jsonSheet[i]['L. Location'].split('.');
+            };
+
+            let LocalPort = '';
+
+            if (jsonSheet[i]['Port'] && typeof jsonSheet[i]['Port'] == 'string') {
+                LocalPort = jsonSheet[i]['Port'].split('/');
+            } else if (jsonSheet[i]['Port'] && typeof jsonSheet[i]['Port'] == 'number') {
+                LocalPort = ['Ethernet' + jsonSheet[i]['Port']];
+            } else if (jsonSheet[i]['L. Port'] && typeof jsonSheet[i]['L. Port'] == 'string') {
+                LocalPort = jsonSheet[i]['L. Port'].split('/');
+            } else if (jsonSheet[i]['L. Port'] && typeof jsonSheet[i]['L. Port'] == 'number') {
+                LocalPort = ['Ethernet' + jsonSheet[i]['L. Port']];
+            }
+
+            let LocalSlot = '';
+
+            if (jsonSheet[i]['Slot']) {
+                LocalSlot = jsonSheet[i]['Slot'].split(' ');
+            } else if (jsonSheet[i]['L. Slot']) {
+                LocalSlot = jsonSheet[i]['L. Slot'].split(' ');
             }
 
             // Pulls remote locations and breaks into Arrays
-            const RemoteArr = jsonSheet[i]['R. Location'].split('.');
-            const RemoteSlot = jsonSheet[i]['R. Slot'].split(' ');
-            let RemotePort = jsonSheet[i]['R. Port'];
+
+            let RemoteArr = '';
+
+            if (jsonSheet[i]['Location']) {
+                RemoteArr = jsonSheet[i]['Location'].split('.');
+            } else if (jsonSheet[i]['L. Location']) {
+                RemoteArr = jsonSheet[i]['L. Location'].split('.');
+            };
+
+            let RemotePort = '';
 
             if (typeof jsonSheet[i]['R. Port'] == "string") {
                 RemotePort = jsonSheet[i]['R. Port'].split('/');
             } else if (typeof jsonSheet[i]['R. Port'] == "number") {
                 RemotePort = ['Ethernet' + jsonSheet[i]['R. Port']];
             }
-            
-            console.log(RemotePort);
+
+            let RemoteSlot = '';
+
+            if (jsonSheet[i]['Slot']) {
+                RemoteSlot = jsonSheet[i]['Slot'].split(' ');
+            } else if (jsonSheet[i]['L. Slot']) {
+                RemoteSlot = jsonSheet[i]['L. Slot'].split(' ');
+            }
 
             let cableType = 'Cable';
-            
+
             // Finds the correct cable type and changes it as needed
             const CableType = () => {
-                
+
                 // determines management cables 
-                if (LocalPort.includes('Management') || RemotePort.includes('Management') && jsonSheet[i]['Port Type'] == '1G' || jsonSheet[i]['Port Type'] == '10G') {
+                if (LocalPort[0].includes('Management') || RemotePort[0].includes('Management') && jsonSheet[i]['Port Type'] == '1G' || jsonSheet[i]['Port Type'] == '10G') {
                     cableType = 'mgmt';
                     // determines console cables 
-                } else if (LocalPort.includes('console') || RemotePort.includes('console') && jsonSheet[i]['Port Type'] == '1G' || jsonSheet[i]['Port Type'] == '10G') {
+                } else if (LocalPort[0].includes('console') || RemotePort[0].includes('console') && jsonSheet[i]['Port Type'] == '1G' || jsonSheet[i]['Port Type'] == '10G') {
                     cableType = 'cons';
                     // determines all copper uplinks to port 49
-                } else if (LocalPort.includes('Ethernet49') || RemotePort.includes('Ethernet49') && jsonSheet[i]['Port Type'] == '1G' || jsonSheet[i]['Port Type'] == '10G') {
+                } else if (LocalPort[0].includes('Ethernet49') || RemotePort[0].includes('Ethernet49') && jsonSheet[i]['Port Type'] == '1G' || jsonSheet[i]['Port Type'] == '10G') {
                     cableType = 'uplink';
                     // determines all copper uplinks to port 51
-                } else if (LocalPort.includes('Ethernet51') || RemotePort.includes('Ethernet51') && jsonSheet[i]['Port Type'] == '1G' || jsonSheet[i]['Port Type'] == '10G') {
+                } else if (LocalPort[0].includes('Ethernet51') || RemotePort[0].includes('Ethernet51') && jsonSheet[i]['Port Type'] == '1G' || jsonSheet[i]['Port Type'] == '10G') {
                     cableType = 'uplink';
                     // determines single mode fiber
-                } else if (jsonSheet[i]['Port Type'] == '100G' || LocalSlot != '1' || RemoteSlot != '1') {
+                } else if (jsonSheet[i]['Port Type'] == '100G' || LocalSlot[1] != '1' || RemoteSlot[1] != '1') {
                     cableType = 'smfib';
                 } else {
                     cableType = 'mmfib';
                 }
             };
             CableType();
-            
+
             // Object to hold all data of First Location
             const Localobj = {
                 Location: LocalArr[0] + '.' + LocalArr[1] + '.' + LocalArr[2],
@@ -106,7 +138,7 @@ function handleFile(e) {
                 Port: LocalPort,
                 Type: cableType
             };
-            
+
             // Object to hold all data of Second Location
             const Remoteobj = {
                 Location: RemoteArr[0] + '.' + RemoteArr[1] + '.' + RemoteArr[2],
@@ -257,17 +289,19 @@ function handleFile(e) {
                 // correct port so that the label will print easier to read for source
                 let srcLabel = Localobj.Hall + '.' + Localobj.Row + '.' + Localobj.Cab + ' U' + Localobj.RU;
 
-                if (Localobj.Port == "Management1" || Localobj.Port == 'Management') {
+                if (Localobj.Port.includes("Management1") || Localobj.Port.includes("Management") || Localobj.Port.includes("management1") || Localobj.Port.includes("management")) {
                     srcPort = 'Mgmt';
-                } else if (Localobj.Port == 'Management2') {
+                } else if (Localobj.Port.includes("Management2") || Localobj.Port.includes("management2")) {
                     srcPort = 'Mgmt' + srcname[srcname.length - 1];
-                } else if (Localobj.Port == 'Console2') {
+                } else if (Localobj.Port.includes("Console2") || Localobj.Port.includes("console2")) {
                     srcPort = 'Con' + srcname[srcname.length - 1];
-                } else if (Localobj.Port == 'Console' || Localobj.Port == 'Console1') {
+                } else if (Localobj.Port.includes("Console1") || Localobj.Port.includes("Console") || Localobj.Port.includes("console1") || Localobj.Port.includes("console")) {
                     srcPort = 'Con';
                 } else if (srcname.length == 10) {
                     srcPort = srcname[0] + srcname[1] + srcname[2] + srcname[srcname.length - 2] + srcname[srcname.length - 1];
-                } else if (Localobj.Slot == "Null" || Localobj.Slot == "Undefined" || Localobj.Slot == "1") {
+                } else if (srcname.length == 9) {
+                    srcPort = srcintro;
+                } else if (Localobj.Slot == "Null" || Localobj.Slot == "Undefined" || Localobj.Slot == "1" && Localobj.Port == 'Management1' || Localobj.Port == 'Management2' || Localobj.Port == 'Console1' || Localobj.Port == 'Console2') {
                     srcPort = srcintro;
                 } else if (Localobj.Port.length == 2 && Localobj.Port != "Management1" || Localobj.Port != 'Management2' || Localobj.Port != 'Console1' || Localobj.Port != 'Console2') {
                     srcPort = srcintro + '/' + Localobj.Port[1];
@@ -279,23 +313,27 @@ function handleFile(e) {
                 // correct port so that the label will print easier to read for destination
                 let rmtLabel = Remoteobj.Hall + '.' + Remoteobj.Row + '.' + Remoteobj.Cab + ' U' + Remoteobj.RU;
 
-                if (Remoteobj.Port == 'Management1' || Remoteobj.Port == 'Management') {
+                if (Remoteobj.Port.includes("Management1") || Remoteobj.Port.includes("Management") || Remoteobj.Port.includes("management1") || Remoteobj.Port.includes("management")) {
                     rmtPort = 'Mgmt';
-                } else if (Remoteobj.Port == 'Management2') {
+                } else if (Remoteobj.Port.includes("Management2") || Remoteobj.Port.includes("management2")) {
                     rmtPort = 'Mgmt' + rmtname[rmtname.length - 1];
-                } else if (Remoteobj.Port == 'Console2') {
+                } else if (Remoteobj.Port.includes("Console2") || Remoteobj.Port.includes("console2")) {
                     rmtPort = 'Con' + rmtname[rmtname.length - 1];
-                } else if (Remoteobj.Port == 'Console1' || Remoteobj.Port == 'Console') {
+                } else if (Remoteobj.Port.includes("Console1") || Remoteobj.Port.includes("Console") || Remoteobj.Port.includes("console1") || Remoteobj.Port.includes("console")) {
                     rmtPort = 'Con';
                 } else if (rmtname.length == 10) {
                     rmtPort = rmtname[0] + rmtname[1] + rmtname[2] + rmtname[rmtname.length - 2] + rmtname[rmtname.length - 1];
-                } else if (Remoteobj.Slot == "Null" || Remoteobj.Slot == "Undefined" || Remoteobj.Slot == "1") {
+                } else if (rmtname.length == 9) {
+                    rmtPort = rmtintro;
+                } else if (Remoteobj.Slot == "Null" || Remoteobj.Slot == "Undefined" || Remoteobj.Slot == "1" && Remoteobj.Port == 'Management1' || Remoteobj.Port == 'Management2' || Remoteobj.Port == 'Console1' || Remoteobj.Port == 'Console2') {
                     rmtPort = rmtintro;
                 } else if (Remoteobj.Port.length == 2 && Remoteobj.Port != "Management1" || Remoteobj.Port != 'Management2' || Remoteobj.Port != 'Console1' || Remoteobj.Port != 'Console2') {
                     rmtPort = rmtintro + '/' + Remoteobj.Port[1];
                 } else if (Remoteobj.Port.length > 2) {
                     rmtPort = Remoteobj.Slot + '/' + rmtname[rmtname.length - 1];
                 }
+
+                console.log(srcPort);
 
                 // Objects that will be used to print to sheet
                 labelobj.srcLabel = srcLabel;
@@ -415,7 +453,7 @@ function handleFile(e) {
         XLSX.utils.book_append_sheet(wb, ws_lengths, ws_name_length);
 
         //writes workbook
-        // XLSX.writeFile(wb, filename);
+        XLSX.writeFile(wb, filename);
 
     };
 

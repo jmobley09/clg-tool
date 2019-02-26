@@ -1,11 +1,13 @@
 {
   "name": "ss-clg",
-  "version": "1.0.0",
+  "version": "0.1.2",
   "description": "Cable length generator for SS teams",
   "main": "server.js",
   "dependencies": {
     "express": "^4.16.3",
-    "mysql": "^2.16.0"
+    "mysql": "^2.16.0",
+    "mysql2": "^1.6.5",
+    "sequelize": "^4.42.0"
   },
   "devDependencies": {},
   "scripts": {
