@@ -289,19 +289,19 @@ function handleFile(e) {
                 // correct port so that the label will print easier to read for source
                 let srcLabel = Localobj.Hall + '.' + Localobj.Row + '.' + Localobj.Cab + ' U' + Localobj.RU;
 
-                if (Localobj.Port == "Management1" || Localobj.Port == 'Management') {
+                if (Localobj.Port.includes("Management1") || Localobj.Port.includes("Management") || Localobj.Port.includes("management1") || Localobj.Port.includes("management")) {
                     srcPort = 'Mgmt';
-                } else if (Localobj.Port == 'Management2') {
+                } else if (Localobj.Port.includes("Management2") || Localobj.Port.includes("management2")) {
                     srcPort = 'Mgmt' + srcname[srcname.length - 1];
-                } else if (Localobj.Port == 'Console2') {
+                } else if (Localobj.Port.includes("Console2") || Localobj.Port.includes("console2")) {
                     srcPort = 'Con' + srcname[srcname.length - 1];
-                } else if (Localobj.Port == 'Console' || Localobj.Port == 'Console1') {
+                } else if (Localobj.Port.includes("Console1") || Localobj.Port.includes("Console") || Localobj.Port.includes("console1") || Localobj.Port.includes("console")) {
                     srcPort = 'Con';
                 } else if (srcname.length == 10) {
                     srcPort = srcname[0] + srcname[1] + srcname[2] + srcname[srcname.length - 2] + srcname[srcname.length - 1];
                 } else if (srcname.length == 9) {
                     srcPort = srcintro;
-                } else if (Localobj.Slot == "Null" || Localobj.Slot == "Undefined" || Localobj.Slot == "1") {
+                } else if (Localobj.Slot == "Null" || Localobj.Slot == "Undefined" || Localobj.Slot == "1" && Localobj.Port == 'Management1' || Localobj.Port == 'Management2' || Localobj.Port == 'Console1' || Localobj.Port == 'Console2') {
                     srcPort = srcintro;
                 } else if (Localobj.Port.length == 2 && Localobj.Port != "Management1" || Localobj.Port != 'Management2' || Localobj.Port != 'Console1' || Localobj.Port != 'Console2') {
                     srcPort = srcintro + '/' + Localobj.Port[1];
@@ -313,25 +313,27 @@ function handleFile(e) {
                 // correct port so that the label will print easier to read for destination
                 let rmtLabel = Remoteobj.Hall + '.' + Remoteobj.Row + '.' + Remoteobj.Cab + ' U' + Remoteobj.RU;
 
-                if (Remoteobj.Port == 'Management1' || Remoteobj.Port == 'Management') {
+                if (Remoteobj.Port.includes("Management1") || Remoteobj.Port.includes("Management") || Remoteobj.Port.includes("management1") || Remoteobj.Port.includes("management")) {
                     rmtPort = 'Mgmt';
-                } else if (Remoteobj.Port == 'Management2') {
+                } else if (Remoteobj.Port.includes("Management2") || Remoteobj.Port.includes("management2")) {
                     rmtPort = 'Mgmt' + rmtname[rmtname.length - 1];
-                } else if (Remoteobj.Port == 'Console2') {
+                } else if (Remoteobj.Port.includes("Console2") || Remoteobj.Port.includes("console2")) {
                     rmtPort = 'Con' + rmtname[rmtname.length - 1];
-                } else if (Remoteobj.Port == 'Console1' || Remoteobj.Port == 'Console') {
+                } else if (Remoteobj.Port.includes("Console1") || Remoteobj.Port.includes("Console") || Remoteobj.Port.includes("console1") || Remoteobj.Port.includes("console")) {
                     rmtPort = 'Con';
                 } else if (rmtname.length == 10) {
                     rmtPort = rmtname[0] + rmtname[1] + rmtname[2] + rmtname[rmtname.length - 2] + rmtname[rmtname.length - 1];
                 } else if (rmtname.length == 9) {
                     rmtPort = rmtintro;
-                } else if (Remoteobj.Slot == "Null" || Remoteobj.Slot == "Undefined" || Remoteobj.Slot == "1") {
+                } else if (Remoteobj.Slot == "Null" || Remoteobj.Slot == "Undefined" || Remoteobj.Slot == "1" && Remoteobj.Port == 'Management1' || Remoteobj.Port == 'Management2' || Remoteobj.Port == 'Console1' || Remoteobj.Port == 'Console2') {
                     rmtPort = rmtintro;
                 } else if (Remoteobj.Port.length == 2 && Remoteobj.Port != "Management1" || Remoteobj.Port != 'Management2' || Remoteobj.Port != 'Console1' || Remoteobj.Port != 'Console2') {
                     rmtPort = rmtintro + '/' + Remoteobj.Port[1];
                 } else if (Remoteobj.Port.length > 2) {
                     rmtPort = Remoteobj.Slot + '/' + rmtname[rmtname.length - 1];
                 }
+
+                console.log(srcPort);
 
                 // Objects that will be used to print to sheet
                 labelobj.srcLabel = srcLabel;
