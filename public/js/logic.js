@@ -44,70 +44,68 @@ function handleFile(e) {
                 $('#NextModal').modal('show');
                 throw " ";
             };
-            
+
             // Pulls local locations and breaks into Arrays
 
             let LocalArr = '';
-            if (jsonSheet[i]['Location']){
+
+            if (jsonSheet[i]['Location']) {
                 LocalArr = jsonSheet[i]['Location'].split('.');
-            } else if (jsonSheet[i]['L. Location']){
+            } else if (jsonSheet[i]['L. Location']) {
                 LocalArr = jsonSheet[i]['L. Location'].split('.');
             };
 
             let LocalPort = '';
-            if (jsonSheet[i]['Port']){
+
+            if (jsonSheet[i]['Port'] && typeof jsonSheet[i]['Port'] == 'string') {
                 LocalPort = jsonSheet[i]['Port'].split('/');
-            } else if (jsonSheet[i]['L. Port']) {
+            } else if (jsonSheet[i]['Port'] && typeof jsonSheet[i]['Port'] == 'number') {
+                LocalPort = ['Ethernet' + jsonSheet[i]['Port']];
+            } else if (jsonSheet[i]['L. Port'] && typeof jsonSheet[i]['L. Port'] == 'string') {
                 LocalPort = jsonSheet[i]['L. Port'].split('/');
+            } else if (jsonSheet[i]['L. Port'] && typeof jsonSheet[i]['L. Port'] == 'number') {
+                LocalPort = ['Ethernet' + jsonSheet[i]['L. Port']];
             }
 
             let LocalSlot = '';
+
             if (jsonSheet[i]['Slot']) {
                 LocalSlot = jsonSheet[i]['Slot'].split(' ');
             } else if (jsonSheet[i]['L. Slot']) {
                 LocalSlot = jsonSheet[i]['L. Slot'].split(' ');
             }
 
-            if (typeof jsonSheet[i]['L. Port'] == "string" || typeof jsonSheet[i]['Port'] == "string") {
-                LocalPort = jsonSheet[i]['L. Port'].split('/');
-            } else if (typeof jsonSheet[i]['L. Port'] == "number" || typeof jsonSheet[i]['Port'] == "number") {
-                LocalPort = ['Ethernet' + jsonSheet[i]['L. Port']];
-            }
-            
             // Pulls remote locations and breaks into Arrays
 
             let RemoteArr = '';
-            if (jsonSheet[i]['Location']){
+
+            if (jsonSheet[i]['Location']) {
                 RemoteArr = jsonSheet[i]['Location'].split('.');
-            } else if (jsonSheet[i]['L. Location']){
+            } else if (jsonSheet[i]['L. Location']) {
                 RemoteArr = jsonSheet[i]['L. Location'].split('.');
             };
 
             let RemotePort = '';
-            if (jsonSheet[i]['Port']){
-                RemotePort = jsonSheet[i]['Port'].split('/');
-            } else if (jsonSheet[i]['L. Port']) {
-                RemotePort = jsonSheet[i]['L. Port'].split('/');
+
+            if (typeof jsonSheet[i]['R. Port'] == "string") {
+                RemotePort = jsonSheet[i]['R. Port'].split('/');
+            } else if (typeof jsonSheet[i]['R. Port'] == "number") {
+                RemotePort = ['Ethernet' + jsonSheet[i]['R. Port']];
             }
 
             let RemoteSlot = '';
+
             if (jsonSheet[i]['Slot']) {
                 RemoteSlot = jsonSheet[i]['Slot'].split(' ');
             } else if (jsonSheet[i]['L. Slot']) {
                 RemoteSlot = jsonSheet[i]['L. Slot'].split(' ');
             }
 
-            if (typeof jsonSheet[i]['L. Port'] == "string" || typeof jsonSheet[i]['Port'] == "string") {
-                RemotePort = jsonSheet[i]['L. Port'].split('/');
-            } else if (typeof jsonSheet[i]['L. Port'] == "number" || typeof jsonSheet[i]['Port'] == "number") {
-                RemotePort = ['Ethernet' + jsonSheet[i]['L. Port']];
-            }
-
             let cableType = 'Cable';
-            
+
             // Finds the correct cable type and changes it as needed
             const CableType = () => {
-                
+
                 // determines management cables 
                 if (LocalPort[0].includes('Management') || RemotePort[0].includes('Management') && jsonSheet[i]['Port Type'] == '1G' || jsonSheet[i]['Port Type'] == '10G') {
                     cableType = 'mgmt';
@@ -128,7 +126,7 @@ function handleFile(e) {
                 }
             };
             CableType();
-            
+
             // Object to hold all data of First Location
             const Localobj = {
                 Location: LocalArr[0] + '.' + LocalArr[1] + '.' + LocalArr[2],
@@ -140,7 +138,7 @@ function handleFile(e) {
                 Port: LocalPort,
                 Type: cableType
             };
-            
+
             // Object to hold all data of Second Location
             const Remoteobj = {
                 Location: RemoteArr[0] + '.' + RemoteArr[1] + '.' + RemoteArr[2],
@@ -152,7 +150,7 @@ function handleFile(e) {
                 Port: RemotePort,
                 Type: cableType
             };
-            console.log(Localobj.Type);
+
             // Calculations for length
             // All variables stored in Inches
             const ruWidth = 2; // each RU is 2 in
@@ -301,6 +299,8 @@ function handleFile(e) {
                     srcPort = 'Con';
                 } else if (srcname.length == 10) {
                     srcPort = srcname[0] + srcname[1] + srcname[2] + srcname[srcname.length - 2] + srcname[srcname.length - 1];
+                } else if (srcname.length == 9) {
+                    srcPort = srcintro;
                 } else if (Localobj.Slot == "Null" || Localobj.Slot == "Undefined" || Localobj.Slot == "1") {
                     srcPort = srcintro;
                 } else if (Localobj.Port.length == 2 && Localobj.Port != "Management1" || Localobj.Port != 'Management2' || Localobj.Port != 'Console1' || Localobj.Port != 'Console2') {
@@ -323,6 +323,8 @@ function handleFile(e) {
                     rmtPort = 'Con';
                 } else if (rmtname.length == 10) {
                     rmtPort = rmtname[0] + rmtname[1] + rmtname[2] + rmtname[rmtname.length - 2] + rmtname[rmtname.length - 1];
+                } else if (rmtname.length == 9) {
+                    rmtPort = rmtintro;
                 } else if (Remoteobj.Slot == "Null" || Remoteobj.Slot == "Undefined" || Remoteobj.Slot == "1") {
                     rmtPort = rmtintro;
                 } else if (Remoteobj.Port.length == 2 && Remoteobj.Port != "Management1" || Remoteobj.Port != 'Management2' || Remoteobj.Port != 'Console1' || Remoteobj.Port != 'Console2') {
