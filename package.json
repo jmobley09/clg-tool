@@ -1,6 +1,6 @@
 {
   "name": "ss-clg",
-  "version": "1.0.0",
+  "version": "0.1.2",
   "description": "Cable length generator for SS teams",
   "main": "server.js",
   "dependencies": {
