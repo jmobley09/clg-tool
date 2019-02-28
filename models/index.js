@@ -1,36 +1,46 @@
-"use strict";
+'use strict';
 
-var fs = require("fs");
-var path = require("path");
-var Sequelize = require("sequelize");
-var basename = path.basename(module.filename);
-var env = process.env.NODE_ENV || "development";
-var config = require(__dirname + "/../config/config.json")[env];
-var db = {};
+const mongoose = require('mongoose');
+const url = 'mongodb://localhost:27017/liudb';
 
-if (config.use_env_variable) {
-  var sequelize = new Sequelize(process.env[config.use_env_variable]);
-} else {
-  var sequelize = new Sequelize(config.database, config.username, config.password, config);
-}
+mongoose.connect(url);
 
-fs
-  .readdirSync(__dirname)
-  .filter(function(file) {
-    return (file.indexOf(".") !== 0) && (file !== basename) && (file.slice(-3) === ".js");
-  })
-  .forEach(function(file) {
-    var model = sequelize["import"](path.join(__dirname, file));
-    db[model.name] = model;
-  });
+const Schema = mongoose.Schema;
+const ObjectId = Schema.ObjectId;
 
-Object.keys(db).forEach(function(modelName) {
-  if (db[modelName].associate) {
-    db[modelName].associate(db);
-  }
-});
+const Liu = new Schema ({
+  location: "",
+  connection: "",
+})
 
-db.sequelize = sequelize;
-db.Sequelize = Sequelize;
 
-module.exports = db;
+
+
+// const assert = require('assert');
+// const MongoClient = require('mongodb').MongoClient;
+
+// // db url
+
+// const findDocuments = function (db, callback) {
+//   // Get the documents collection
+//   const collection = db.collection('documents');
+//   // Find some documents
+//   collection.find({}).toArray(function (err, docs) {
+//     assert.equal(err, null);
+//     console.log("Found the following records");
+//     callback(docs);
+//   });
+// };
+
+// // Use connect method to connect to the Server
+// MongoClient.connect(url, function (err, db) {
+
+//   assert.equal(null, err);
+//   console.log("Connected correctly to server");
+//   findDocuments(db, function (docs) {
+//     exports.getall = function () {
+//       return docs;
+//     }
+//     db.close();
+//   });
+// });
