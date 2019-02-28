@@ -1,5 +1,5 @@
 // *********************************************************************************
-// THIS FILE INITIATES THE CONNECTION TO DATABASE
+// CONNECTION.JS - THIS FILE INITIATES THE CONNECTION TO DATABASE
 // *********************************************************************************
 
 // Dependencies
@@ -26,9 +26,9 @@ const Liu = new Schema({
 // const model = require('../config/connection.js');
 
 
-const liudb = mongoose.model('liu', Liu);
+const db = mongoose.model('liu', Liu);
 
-const newLiu = new liudb({
+const newLiu = new db({
   location: 'US.MSC.02.01.1100.25.015',
   remote: '1100.01'
 });
@@ -38,4 +38,4 @@ const newLiu = new liudb({
 //   console.log(docs);
 // })
 
-module.exports = liudb;
+console.log(newLiu.location);
