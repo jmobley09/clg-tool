@@ -213,7 +213,9 @@ function handleFile(e) {
                 const inCabMeter = Math.ceil(inCabLength * .3048);
 
                 function mdfCalc() {
-
+                    $.getJSON("/api/liu", function(data) {
+                        console.log(data);
+                      });
                 }
 
                 // takes in type of cable and adds to json object along with length
@@ -332,8 +334,6 @@ function handleFile(e) {
                 } else if (Remoteobj.Port.length > 2) {
                     rmtPort = Remoteobj.Slot + '/' + rmtname[rmtname.length - 1];
                 }
-
-                console.log(srcPort);
 
                 // Objects that will be used to print to sheet
                 labelobj.srcLabel = srcLabel;
