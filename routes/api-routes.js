@@ -25,8 +25,9 @@ module.exports = function (app) {
         liudb.find({
             Remote: req.params.location
         }).then(doc => {
-            res.jsonp(doc);
+            res.json(doc);
             return JSON.stringify(doc);
         })
     });
 };
+
