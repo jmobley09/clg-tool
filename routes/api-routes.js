@@ -9,23 +9,6 @@ const mongoose = require('mongoose');
 // Requiring our models
 const liudb = require("../models/liu.js");
 
-// 
-// uncomment to create new data in db
-// 
-
-// let test = new liudb({
-//     location: "US.MSC.02.01.1100.25.15.45",
-//     remote: '1100.01.02'
-// });
-// test.save()
-//     .then(doc => {
-//         console.log(doc);
-//     })
-//     .catch(err => {
-//         console.error(err);
-//     })
-
-
 // Routes
 // =============================================================
 module.exports = function (app) {
@@ -40,7 +23,7 @@ module.exports = function (app) {
     // GET route for getting specific location data
     app.get("/api/liu/:location", function (req, res) {
         liudb.find({
-            location: req.params.location
+            Remote: req.params.location
         }).then(doc => {
             res.json(doc);
         })

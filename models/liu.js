@@ -14,12 +14,19 @@ const Schema = mongoose.Schema;
 const ObjectId = Schema.ObjectId;
 
 let LiuSchema = new mongoose.Schema({
-  location: {
+  Location: {
     type: String,
     required: true,
-    unique: true
   },
-  remote: {
+  RU: {
+    type: String,
+    required: true,
+  },
+  Remote: {
+    type: String,
+    required: true
+  },
+  RemoteTwo: {
     type: String,
     required: true
   }
