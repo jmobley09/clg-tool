@@ -77,13 +77,7 @@ function handleFile(e) {
 
             // Pulls remote locations and breaks into Arrays
 
-            let RemoteArr = '';
-
-            if (jsonSheet[i]['Location']) {
-                RemoteArr = jsonSheet[i]['Location'].split('.');
-            } else if (jsonSheet[i]['L. Location']) {
-                RemoteArr = jsonSheet[i]['L. Location'].split('.');
-            };
+            let RemoteArr = jsonSheet[i]['R. Location'].split('.');
 
             let RemotePort = '';
 
@@ -129,11 +123,11 @@ function handleFile(e) {
 
             // Object to hold all data of First Location
             const Localobj = {
-                Location: LocalArr[0] + '.' + LocalArr[1] + '.' + LocalArr[2],
+                Location: LocalArr[0] + '.' + LocalArr[1] + '.' + LocalArr[2] + '.' + LocalArr[3],
                 Hall: LocalArr[4],
-                Row: parseFloat(LocalArr[5]),
-                Cab: parseFloat(LocalArr[6]),
-                RU: parseFloat(LocalArr[7]),
+                Row: parseInt(LocalArr[5]),
+                Cab: parseInt(LocalArr[6]),
+                RU: parseInt(LocalArr[7]),
                 Slot: LocalSlot[1] || 1,
                 Port: LocalPort,
                 Type: cableType
@@ -143,9 +137,9 @@ function handleFile(e) {
             const Remoteobj = {
                 Location: RemoteArr[0] + '.' + RemoteArr[1] + '.' + RemoteArr[2],
                 Hall: RemoteArr[4],
-                Row: parseFloat(RemoteArr[5]),
-                Cab: parseFloat(RemoteArr[6]),
-                RU: parseFloat(RemoteArr[7]),
+                Row: parseInt(RemoteArr[5]),
+                Cab: parseInt(RemoteArr[6]),
+                RU: parseInt(RemoteArr[7]),
                 Slot: RemoteSlot[1] || 1,
                 Port: RemotePort,
                 Type: cableType
@@ -169,36 +163,34 @@ function handleFile(e) {
 
                 // Calculates the number of cabs apart, and returns only positive numbers
                 let cabLength = 0;
-                const cabLengthCalc = () => {
+                const cabLengthCalc = (srcobj, rmtobj) => {
+                    if (srcobj.Row != rmtobj.Row && srcobj.Cab > 17) {
+                        cabLength = 35 - srcobj.Cab;
+                    } else if (srcobj.Row != rmtobj.Row && srcobj.Cab <= 17 ) {
+                        cabLength = (1 - srcobj.Cab);
+                    };
 
-                    if (Localobj.Cab > Remoteobj.Cab) {
-                        cabLength = (Localobj.Cab - Remoteobj.Cab) * cabWidth;
-                        return cabLength;
-                    } else if (Remoteobj.Cab > Localobj.Cab) {
-                        cabLength = (Remoteobj.Cab - Localobj.Cab) * cabWidth;
-                        return cabLength;
-                    } else if (Remoteobj.Cab == Localobj.Cab) {
-                        cabLength = (Remoteobj.Cab - Localobj.Cab) * cabWidth;
-                        return cabLength;
+                    if (cabLength < 0) {
+                        cabLength = cabLength * -1;
                     };
                 };
-                cabLengthCalc();
-
-                // Vars to be used in calculations 
-                const fistRU = (52 - Localobj.RU) * ruWidth;
-                const secondRU = (52 - Remoteobj.RU) * ruWidth;
-
-
+                cabLengthCalc(Localobj, Remoteobj);
+                console.log(cabLength);
+                
                 // Adds the necessary gaps between the rows that have them
                 let LengthIn = 0;
-                const GapAdder = () => {
-                    if (Localobj.Cab <= 10 && (Remoteobj.Cab >= 11 && Remoteobj.Cab <= 25)) {
+                const GapAdder = (srcobj, rmtobj) => {
+                    // Vars to be used in calculations 
+                    const fistRU = (52 - srcobj.RU) * ruWidth;
+                    const secondRU = (52 - rmtobj.RU) * ruWidth;
+
+                    if (srcobj.Cab <= 10 && (rmtobj.Cab >= 11 && rmtobj.Cab <= 25)) {
                         LengthIn = (cabLength + fistRU + secondRU + slack + (topCopper * 2)) + cabGap;
                         return LengthIn;
-                    } else if ((Localobj.Cab >= 11 && Localobj.Cab <= 25) && Remoteobj.Cab >= 26) {
+                    } else if ((srcobj.Cab >= 11 && srcobj.Cab <= 25) && rmtobj.Cab >= 26) {
                         LengthIn = (cabLength + fistRU + secondRU + slack + (topCopper * 2)) + cabGap;
                         return LengthIn;
-                    } else if (Localobj.Cab <= 10 && Remoteobj.Cab >= 26) {
+                    } else if (srcobj.Cab <= 10 && rmtobj.Cab >= 26) {
                         LengthIn = (cabLength + fistRU + secondRU + slack + (topCopper * 2)) + (cabGap * 2);
                         return LengthIn;
                     } else {
@@ -206,15 +198,43 @@ function handleFile(e) {
                         return LengthIn;
                     };
                 };
-                GapAdder();
+                GapAdder(Localobj, Remoteobj);
 
-                // take length in inches and converts to feet
+                // take length in inches and converts to feet or meters
                 const inCabLength = Math.ceil(LengthIn / 12);
                 const inCabMeter = Math.ceil(inCabLength * .3048);
-
+                
+                // Uses DB to find remote LIU location and uses that as source to calculate to destination
                 function mdfCalc() {
+                    // updates row so that it is always two digits
+                    let row = Localobj.Row;
+                    if (row < 10) {
+                        row = '0' + row;
+                    }
+
+                    // var used to run query
+                    let query =  '/api/liu/' + Localobj.Location + '.' + Localobj.Hall + '.' +  row;
+
+                    // defining new object to use with calculations
+                    const mdfLocal = {};
+
+                    // api call to DB returning json of the remote location
+                    $.get(query, function(data) {
+
+                        const newLocation = data[0].Location.split('.');
+
+                        mdfLocal.Hall = newLocation[4];
+                        mdfLocal.Row = parseInt(newLocation[5]);
+                        mdfLocal.Cab = parseInt(newLocation[6]);
+                        mdfLocal.RU = parseInt(data[0].RU);
+
+                    });
                     
-                }
+                    // const mdflen = cabLengthCalc(mdfLocal, Remoteobj);
+
+                    // console.log(cabLengthCalc(Localobj, Remoteobj));
+                      
+                };
 
                 // takes in type of cable and adds to json object along with length
                 const typeConvert = () => {
@@ -451,7 +471,7 @@ function handleFile(e) {
         XLSX.utils.book_append_sheet(wb, ws_lengths, ws_name_length);
 
         //writes workbook
-        XLSX.writeFile(wb, filename);
+        // XLSX.writeFile(wb, filename);
 
     };
 

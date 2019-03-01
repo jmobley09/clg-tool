@@ -26,10 +26,6 @@ let LiuSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  RemoteTwo: {
-    type: String,
-    required: true
-  }
 });
 
 module.exports = mongoose.model('liu', LiuSchema);
