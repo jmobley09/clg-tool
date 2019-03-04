@@ -6,7 +6,7 @@
   "dependencies": {
     "assert": "^1.4.1",
     "express": "^4.16.3",
-    "mongodb": "^2.2.33",
+    "mongodb": "^2.2.36",
     "mongoose": "^5.4.16",
     "validator": "^10.11.0"
   },

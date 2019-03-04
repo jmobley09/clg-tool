@@ -174,6 +174,7 @@ function handleFile(e) {
                     mdfLocal.Type = Localobj.Type;
 
                 }).then(function () {
+                    console.log(mdfLocal);
                     return mdfLocal;
                 });
             };
@@ -560,7 +561,7 @@ function handleFile(e) {
         XLSX.utils.book_append_sheet(wb, ws_lengths, ws_name_length);
 
         //writes workbook
-        // XLSX.writeFile(wb, filename);
+        XLSX.writeFile(wb, filename);
 
     };
 

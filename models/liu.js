@@ -7,7 +7,9 @@ const mongoose = require('mongoose');
 const validator = require('validator');
 
 // Creates MongoDB connection using mongoose.
-mongoose.connect('mongodb://localhost:27017/liudb');
+mongoose.connect('mongodb://dbadmin:Futurpilot09@ssclg-shard-00-00-wkabs.mongodb.net:27017,ssclg-shard-00-01-wkabs.mongodb.net:27017,ssclg-shard-00-02-wkabs.mongodb.net:27017/test?ssl=true&replicaSet=ssclg-shard-0&authSource=admin&retryWrites=true');
+
+console.log(mongoose.connection.readyState);
 
 // Creates Model
 const Schema = mongoose.Schema;
@@ -27,5 +29,5 @@ let LiuSchema = new mongoose.Schema({
     required: true
   },
 });
-
-module.exports = mongoose.model('liu', LiuSchema);
+const collectionName = 'liu';
+module.exports = mongoose.model('liu', LiuSchema, collectionName);
