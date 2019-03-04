@@ -28,7 +28,8 @@ function handleFile(e) {
 
         // Variables for storing labels and lengths. Used to write Json data to excel file
         let labelSheet = [];
-        let lengthSheet = [];
+        let run2labels = [];
+        let additonalRun = false;
         console.log(jsonSheet);
 
         // Variables for storing the cable types
@@ -253,7 +254,16 @@ function handleFile(e) {
 
                 // Holds the lengths of each run in Inches. Converted in function below
                 const run1 = totalCalc(Localobj, Remoteobj);
-                const run2 = totalCalc(mdfLocal, Remoteobj);
+                let run2;
+
+                if (Localobj.Row != Remoteobj.Row) {
+                    run2 = totalCalc(mdfLocal, Remoteobj);
+                }
+
+                // used to create additional label if another run is present
+                if (run2 > 0) {
+                    additonalRun = true;
+                };
 
                 // takes in type of cable and adds to json object along with length
                 const typeConvert = () => {
@@ -418,6 +428,21 @@ function handleFile(e) {
                     labelSheet[j] = labelobj;
                     labelSheet[n] = labelobj2;
                 }
+
+                // evaluates if additonal run will be made and adds the second label to new sheet
+                // the rows cannot be equal, this will prevent in row / cons & mgmt from being added to second sheet
+                if (Localobj.Row != Remoteobj.Row && additonalRun) {
+                    if (i == 0) {
+                        n = i + 1;
+                        run2labels[i] = labelobj;
+                        run2labels[n] = labelobj2;
+                    } else {
+                        let j = i + i;
+                        n = j + 1;
+                        run2labels[j] = labelobj;
+                        run2labels[n] = labelobj2;
+                    }
+                }
             }
             createLabel();
 
@@ -496,22 +521,28 @@ function handleFile(e) {
         // 
         const filename = "SS_" + fileName;
         const ws_name = "SS_CablePlan";
-        const ws_name_label = "Labels";
+        const ws_name_label = "Run 1 Labels";
+        const ws_name_run2label = "Run 2 Labels";
         const ws_name_length = 'Lengths';
 
         // Variables to convert data into sheets
         const wb = XLSX.utils.book_new();
         const ws = XLSX.utils.json_to_sheet(jsonSheet);
         const ws_labels = XLSX.utils.json_to_sheet(labelSheet);
+        const ws_run2labels = XLSX.utils.json_to_sheet(run2labels);
         const ws_lengths = XLSX.utils.json_to_sheet(lenData);
+
 
         //add worksheets to workbook
         XLSX.utils.book_append_sheet(wb, ws, ws_name);
         XLSX.utils.book_append_sheet(wb, ws_labels, ws_name_label);
+        if (run2labels.length > 0) {
+            XLSX.utils.book_append_sheet(wb, ws_run2labels, ws_name_run2label);
+        }
         XLSX.utils.book_append_sheet(wb, ws_lengths, ws_name_length);
 
         //writes workbook
-        XLSX.writeFile(wb, filename);
+        // XLSX.writeFile(wb, filename);
 
     };
 
