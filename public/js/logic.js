@@ -1,5 +1,7 @@
 $('#NextModal').modal({ show: false });
 $('#PortModal').modal({ show: false });
+$.ajaxSetup({ async: false });
+
 
 const rABS = true; // true: readAsBinaryString ; false: readAsArrayBuffer
 
@@ -26,7 +28,8 @@ function handleFile(e) {
 
         // Variables for storing labels and lengths. Used to write Json data to excel file
         let labelSheet = [];
-        let lengthSheet = [];
+        let run2labels = [];
+        let additonalRun = false;
         console.log(jsonSheet);
 
         // Variables for storing the cable types
@@ -77,13 +80,7 @@ function handleFile(e) {
 
             // Pulls remote locations and breaks into Arrays
 
-            let RemoteArr = '';
-
-            if (jsonSheet[i]['Location']) {
-                RemoteArr = jsonSheet[i]['Location'].split('.');
-            } else if (jsonSheet[i]['L. Location']) {
-                RemoteArr = jsonSheet[i]['L. Location'].split('.');
-            };
+            let RemoteArr = jsonSheet[i]['R. Location'].split('.');
 
             let RemotePort = '';
 
@@ -129,11 +126,11 @@ function handleFile(e) {
 
             // Object to hold all data of First Location
             const Localobj = {
-                Location: LocalArr[0] + '.' + LocalArr[1] + '.' + LocalArr[2],
+                Location: LocalArr[0] + '.' + LocalArr[1] + '.' + LocalArr[2] + '.' + LocalArr[3],
                 Hall: LocalArr[4],
-                Row: parseFloat(LocalArr[5]),
-                Cab: parseFloat(LocalArr[6]),
-                RU: parseFloat(LocalArr[7]),
+                Row: parseInt(LocalArr[5]),
+                Cab: parseInt(LocalArr[6]),
+                RU: parseInt(LocalArr[7]),
                 Slot: LocalSlot[1] || 1,
                 Port: LocalPort,
                 Type: cableType
@@ -143,12 +140,43 @@ function handleFile(e) {
             const Remoteobj = {
                 Location: RemoteArr[0] + '.' + RemoteArr[1] + '.' + RemoteArr[2],
                 Hall: RemoteArr[4],
-                Row: parseFloat(RemoteArr[5]),
-                Cab: parseFloat(RemoteArr[6]),
-                RU: parseFloat(RemoteArr[7]),
+                Row: parseInt(RemoteArr[5]),
+                Cab: parseInt(RemoteArr[6]),
+                RU: parseInt(RemoteArr[7]),
                 Slot: RemoteSlot[1] || 1,
                 Port: RemotePort,
                 Type: cableType
+            };
+
+            // defining new object to use with out of row calculations
+            let mdfLocal = {};
+
+            // Uses DB to find remote LIU location and uses that as source to calculate to destination
+            function mdfCalc() {
+                // updates row so that it is always two digits
+                let row = Localobj.Row;
+                if (row < 10) {
+                    row = '0' + row;
+                }
+
+                // var used to run query
+                let query = '/api/liu/' + Localobj.Location + '.' + Localobj.Hall + '.' + row;
+
+                // api call to DB returning json of the remote location
+                $.get(query, function (data) {
+
+                    const newLocation = data[0].Location.split('.');
+
+                    mdfLocal.Hall = newLocation[4];
+                    mdfLocal.Row = parseInt(newLocation[5]);
+                    mdfLocal.Cab = parseInt(newLocation[6]);
+                    mdfLocal.RU = parseInt(data[0].RU);
+                    mdfLocal.Type = Localobj.Type;
+
+                }).then(function () {
+                    console.log(mdfLocal);
+                    return mdfLocal;
+                });
             };
 
             // Calculations for length
@@ -158,88 +186,133 @@ function handleFile(e) {
             const topFiber = 30; // from top RU to fiber tray is 10in
             const cabWidth = 27; // each cab is 2ft 3 in wide
             const cabLiu = 12; // from cab 1  or cab 35 to the liu tray at the end of the row
-            const slack = 24; // extra 1 foot of slack for dressing;
+            const slack = 12; // extra 1 foot of slack for dressing;
             const cabGap = 48; // every cab gap is 4 FT & they are located between cabs 10-11 & 25-26
 
-            let inCabLength = 0;
-            let outCabLength = 0;
-
-            // Code block calculating In Cab Copper Connections
+            // Code block calculating Connections
             const CabCalc = () => {
 
                 // Calculates the number of cabs apart, and returns only positive numbers
-                let cabLength = 0;
-                const cabLengthCalc = () => {
-
-                    if (Localobj.Cab > Remoteobj.Cab) {
-                        cabLength = (Localobj.Cab - Remoteobj.Cab) * cabWidth;
-                        return cabLength;
-                    } else if (Remoteobj.Cab > Localobj.Cab) {
-                        cabLength = (Remoteobj.Cab - Localobj.Cab) * cabWidth;
-                        return cabLength;
-                    } else if (Remoteobj.Cab == Localobj.Cab) {
-                        cabLength = (Remoteobj.Cab - Localobj.Cab) * cabWidth;
-                        return cabLength;
+                const cabLengthCalc = (srcobj, rmtobj) => {
+                    let cabLength = 0;
+                    if (srcobj.Row != rmtobj.Row && srcobj.Cab > 17) {
+                        cabLength = 35 - srcobj.Cab;
+                    } else if (srcobj.Row != rmtobj.Row && srcobj.Cab <= 17) {
+                        cabLength = (1 - srcobj.Cab);
                     };
+
+                    if (cabLength < 0) {
+                        cabLength = cabLength * -1;
+                    };
+                    return cabLength;
                 };
-                cabLengthCalc();
-
-                // Vars to be used in calculations 
-                const fistRU = (52 - Localobj.RU) * ruWidth;
-                const secondRU = (52 - Remoteobj.RU) * ruWidth;
-
 
                 // Adds the necessary gaps between the rows that have them
-                let LengthIn = 0;
-                const GapAdder = () => {
-                    if (Localobj.Cab <= 10 && (Remoteobj.Cab >= 11 && Remoteobj.Cab <= 25)) {
-                        LengthIn = (cabLength + fistRU + secondRU + slack + (topCopper * 2)) + cabGap;
-                        return LengthIn;
-                    } else if ((Localobj.Cab >= 11 && Localobj.Cab <= 25) && Remoteobj.Cab >= 26) {
-                        LengthIn = (cabLength + fistRU + secondRU + slack + (topCopper * 2)) + cabGap;
-                        return LengthIn;
-                    } else if (Localobj.Cab <= 10 && Remoteobj.Cab >= 26) {
-                        LengthIn = (cabLength + fistRU + secondRU + slack + (topCopper * 2)) + (cabGap * 2);
-                        return LengthIn;
-                    } else {
-                        LengthIn = cabLength + fistRU + secondRU + slack + (topCopper * 2);
-                        return LengthIn;
-                    };
+                const GapAdder = (srcobj, rmtobj) => {
+                    let gaps = 0;
+                    if (srcobj.Row != rmtobj.Row && srcobj.Cab <= 26 && srcobj.Cab >= 17) {
+                        gaps = 1;
+                    } else if (srcobj.Row != rmtobj.Row && srcobj.Cab <= 17 && srcobj.Cab > 10) {
+                        gaps = 1;
+                    } else if (srcobj.Row == rmtobj.Row && srcobj.Cab >= 26 && (rmtobj.Cab <= 25 && rmtobj.Cab >= 17)) {
+                        gaps = 1;
+                    } else if (srcobj.Row == rmtobj.Row && (srcobj.Cab <= 17 && srcobj.Cab <= 11) && rmtobj.Cab <= 10) {
+                        gaps = 1;
+                    } else if (srcobj.Row == rmtobj.Row && rmtobj.Cab >= 26 && (srcobj.Cab <= 25 && srcobj.Cab >= 17)) {
+                        gaps = 1;
+                    } else if (srcobj.Row == rmtobj.Row && (rmtobj.Cab <= 17 && rmtobj.Cab <= 11) && srcobj.Cab <= 10) {
+                        gaps = 1;
+                    } else if (srcobj.Row == rmtobj.Row && srcobj.Cab <= 10 && rmtobj.Cab >= 26) {
+                        gaps = 2;
+                    } else if (srcobj.Row == rmtobj.Row && rmtobj.Cab <= 10 && srcobj.Cab >= 26) {
+                        gaps = 2;
+                    }
+                    return gaps;
                 };
-                GapAdder();
 
-                // take length in inches and converts to feet
-                const inCabLength = Math.ceil(LengthIn / 12);
-                const inCabMeter = Math.ceil(inCabLength * .3048);
 
-                function mdfCalc() {
+                // Var to hold total length in Inches
+                let LengthIn = 0;
 
+                const totalCalc = (srcobj, rmtobj) => {
+
+                    const cabLength = cabLengthCalc(Localobj, Remoteobj);
+                    const gaps = GapAdder(Localobj, Remoteobj);
+                    const firstRu = 52 - srcobj.RU;
+                    const secondRu = 52 - rmtobj.RU;
+
+                    if (srcobj.Row != rmtobj.Row && (srcobj.Cab != rmtobj.Cab)) {
+                        LengthIn = (cabLength * cabWidth) + (gaps * cabGap) + cabLiu + (firstRu * ruWidth) + topFiber + slack;
+                    } else if (srcobj.Row == rmtobj.Row && (srcobj.Cab != rmtobj.Cab)) {
+                        LengthIn = (cabLength * cabWidth) + (gaps * cabGap) + (firstRu * ruWidth) + (secondRu * ruWidth) + (topCopper * 2) + slack;
+                    } else if (srcobj.Row == rmtobj.Row && (srcobj.Cab == rmtobj.Cab)) {
+                        LengthIn = (firstRu * ruWidth) + slack;
+                    }
+
+                    return LengthIn;
+                };
+
+                // Holds the lengths of each run in Inches. Converted in function below
+                const run1 = totalCalc(Localobj, Remoteobj);
+                let run2;
+
+                if (Localobj.Row != Remoteobj.Row) {
+                    mdfCalc();
+                    run2 = totalCalc(mdfLocal, Remoteobj);
                 }
+
+                // used to create additional label if another run is present
+                if (run2 > 0) {
+                    additonalRun = true;
+                };
 
                 // takes in type of cable and adds to json object along with length
                 const typeConvert = () => {
                     if (Localobj.Type == "cons") {
                         jsonSheet[i]['Cable Type'] = "Copper";
-                        jsonSheet[i]['Run1'] = inCabLength + 'ft';
-                        consCables.push(inCabLength);
+                        jsonSheet[i]['Run1'] = Math.ceil(run1 / 12) + 'ft';
+                        consCables.push(Math.ceil(run1 / 12));
+
+                        if (run2 > 0) {
+                            jsonSheet[i]['Run2'] = Math.ceil(run2 / 12) + 'ft';
+                            consCables.push(Math.ceil(run2 / 12));
+                        }
                     } else if (Localobj.Type == "mgmt") {
                         jsonSheet[i]['Cable Type'] = "Copper";
-                        jsonSheet[i]['Run1'] = inCabLength + 'ft';
-                        mgmtCables.push(inCabLength);
+                        jsonSheet[i]['Run1'] = Math.ceil(run1 / 12) + 'ft';
+                        mgmtCables.push(Math.ceil(run1 / 12));
+
+                        if (run2 > 0) {
+                            jsonSheet[i]['Run2'] = Math.ceil(run2 / 12) + 'ft';
+                            mgmtCables.push(Math.ceil(run2 / 12));
+                        }
                     } if (Localobj.Type == "uplink") {
                         jsonSheet[i]['Cable Type'] = "Copper";
-                        jsonSheet[i]['Run1'] = inCabLength + 'ft';
-                        uplinkCables.push(inCabLength);
+                        jsonSheet[i]['Run1'] = Math.ceil(run1 / 12) + 'ft';
+                        uplinkCables.push(Math.ceil(run1 / 12));
+
+                        if (run2 > 0) {
+                            jsonSheet[i]['Run2'] = Math.ceil(run2 / 12) + 'ft';
+                            uplinkCables.push(Math.ceil(run2 / 12));
+                        }
                     } else if (Localobj.Type == "smfib") {
                         jsonSheet[i]['Cable Type'] = "Fiber";
-                        jsonSheet[i]['Run1'] = inCabMeter + 'm';
-                        smfibCables.push(inCabMeter);
-                        mdfCalc();
+                        jsonSheet[i]['Run1'] = Math.ceil(run1 * .0254) + 'm';
+                        smfibCables.push(Math.ceil(run1 * .0254));
+
+                        if (run2 > 0) {
+                            jsonSheet[i]['Run2'] = Math.ceil(run2 * .0254) + 'm';
+                            smfibCables.push(Math.ceil(run2 * .0254));
+                        }
                     } else if (Localobj.Type == "mmfib") {
                         jsonSheet[i]['Cable Type'] = "Fiber";
-                        jsonSheet[i]['Run1'] = inCabMeter + 'm';
-                        mmfibCables.push(inCabMeter);
-                        mdfCalc();
+                        jsonSheet[i]['Run1'] = Math.ceil(run1 * .0254) + 'm';
+                        mmfibCables.push(Math.ceil(run1 * .0254));
+
+                        if (run2 > 0) {
+                            jsonSheet[i]['Run2'] = Math.ceil(run2 * .0254) + 'm';
+                            mmfibCables.push(Math.ceil(run2 * .0254));
+                        }
                     }
                 }
                 typeConvert();
@@ -283,13 +356,23 @@ function handleFile(e) {
                 let rmtname = Remoteobj.Port[0].split('');
                 let rmtintro = rmtname[0] + rmtname[1] + rmtname[2] + rmtname[rmtname.length - 1];
 
+                sethinclu = false;
+                rethinclu = false;
+                if (Remoteobj.Port.includes('eth') || Remoteobj.Port.includes('Eth')) {
+                    rethinclu = true;
+                } else if (Localobj.Port.includes('eth') || Localobj.Port.includes('Eth')) {
+                    sethinclu = true;
+                }
+
                 // ----------------------
 
                 // defines what will be used from objects to generate the source side of the label
                 // correct port so that the label will print easier to read for source
                 let srcLabel = Localobj.Hall + '.' + Localobj.Row + '.' + Localobj.Cab + ' U' + Localobj.RU;
 
-                if (Localobj.Port.includes("Management1") || Localobj.Port.includes("Management") || Localobj.Port.includes("management1") || Localobj.Port.includes("management")) {
+                if (srcname.lenth == 4 || srcname.lenth == 5) {
+                    srcPort = srcname;
+                } else if (Localobj.Port.includes("Management1") || Localobj.Port.includes("Management") || Localobj.Port.includes("management1") || Localobj.Port.includes("management")) {
                     srcPort = 'Mgmt';
                 } else if (Localobj.Port.includes("Management2") || Localobj.Port.includes("management2")) {
                     srcPort = 'Mgmt' + srcname[srcname.length - 1];
@@ -303,17 +386,21 @@ function handleFile(e) {
                     srcPort = srcintro;
                 } else if (Localobj.Slot == "Null" || Localobj.Slot == "Undefined" || Localobj.Slot == "1" && Localobj.Port == 'Management1' || Localobj.Port == 'Management2' || Localobj.Port == 'Console1' || Localobj.Port == 'Console2') {
                     srcPort = srcintro;
-                } else if (Localobj.Port.length == 2 && Localobj.Port != "Management1" || Localobj.Port != 'Management2' || Localobj.Port != 'Console1' || Localobj.Port != 'Console2') {
+                } else if (Localobj.Port.length == 2 && Localobj.Port != "Management1" || Localobj.Port != 'Management2' || Localobj.Port != 'Console1' || Localobj.Port != 'Console2' && sethinclu == false) {
                     srcPort = srcintro + '/' + Localobj.Port[1];
                 } else if (Localobj.Port.length > 2) {
                     srcPort = Localobj.Slot + '/' + srcname[srcname.length - 1];
+                } else {
+                    srcPort = srcintro;
                 }
 
                 // defines what will be used from objects to generate the destination side of the label
                 // correct port so that the label will print easier to read for destination
                 let rmtLabel = Remoteobj.Hall + '.' + Remoteobj.Row + '.' + Remoteobj.Cab + ' U' + Remoteobj.RU;
 
-                if (Remoteobj.Port.includes("Management1") || Remoteobj.Port.includes("Management") || Remoteobj.Port.includes("management1") || Remoteobj.Port.includes("management")) {
+                if (rmtname.lenth == 4 || rmtname.lenth == 5) {
+                    rmtPort = rmtname;
+                } else if (Remoteobj.Port.includes("Management1") || Remoteobj.Port.includes("Management") || Remoteobj.Port.includes("management1") || Remoteobj.Port.includes("management")) {
                     rmtPort = 'Mgmt';
                 } else if (Remoteobj.Port.includes("Management2") || Remoteobj.Port.includes("management2")) {
                     rmtPort = 'Mgmt' + rmtname[rmtname.length - 1];
@@ -325,15 +412,15 @@ function handleFile(e) {
                     rmtPort = rmtname[0] + rmtname[1] + rmtname[2] + rmtname[rmtname.length - 2] + rmtname[rmtname.length - 1];
                 } else if (rmtname.length == 9) {
                     rmtPort = rmtintro;
-                } else if (Remoteobj.Slot == "Null" || Remoteobj.Slot == "Undefined" || Remoteobj.Slot == "1" && Remoteobj.Port == 'Management1' || Remoteobj.Port == 'Management2' || Remoteobj.Port == 'Console1' || Remoteobj.Port == 'Console2') {
+                } else if (Remoteobj.Slot.includes("null") || Remoteobj.Slot.includes("Null") || Remoteobj.Slot.includes("undefined") || Remoteobj.Slot.includes("1") && Remoteobj.Port == 'Management1' || Remoteobj.Port == 'Management2' || Remoteobj.Port == 'Console1' || Remoteobj.Port == 'Console2') {
                     rmtPort = rmtintro;
-                } else if (Remoteobj.Port.length == 2 && Remoteobj.Port != "Management1" || Remoteobj.Port != 'Management2' || Remoteobj.Port != 'Console1' || Remoteobj.Port != 'Console2') {
+                } else if (Remoteobj.Port.length == 2 && Remoteobj.Port != "Management1" || Remoteobj.Port != 'Management2' || Remoteobj.Port != 'Console1' || Remoteobj.Port != 'Console2' && rethinclu == false) {
                     rmtPort = rmtintro + '/' + Remoteobj.Port[1];
                 } else if (Remoteobj.Port.length > 2) {
                     rmtPort = Remoteobj.Slot + '/' + rmtname[rmtname.length - 1];
+                } else {
+                    rmtPort = rmtintro;
                 }
-
-                console.log(srcPort);
 
                 // Objects that will be used to print to sheet
                 labelobj.srcLabel = srcLabel;
@@ -343,6 +430,8 @@ function handleFile(e) {
                 labelobj2.srcLabel = rmtLabel;
                 labelobj2.srcPort = rmtPort;
                 labelobj2.rmtLabel = srcLabel + ' ' + srcPort;
+
+                console.log(rmtPort);
 
                 let n = 1;
                 let j = 0;
@@ -357,6 +446,21 @@ function handleFile(e) {
                     n = j + 1;
                     labelSheet[j] = labelobj;
                     labelSheet[n] = labelobj2;
+                }
+
+                // evaluates if additonal run will be made and adds the second label to new sheet
+                // the rows cannot be equal, this will prevent in row / cons & mgmt from being added to second sheet
+                if (Localobj.Row != Remoteobj.Row && additonalRun) {
+                    if (i == 0) {
+                        n = i + 1;
+                        run2labels[i] = labelobj;
+                        run2labels[n] = labelobj2;
+                    } else {
+                        let j = i + i;
+                        n = j + 1;
+                        run2labels[j] = labelobj;
+                        run2labels[n] = labelobj2;
+                    }
                 }
             }
             createLabel();
@@ -436,20 +540,24 @@ function handleFile(e) {
         // 
         const filename = "SS_" + fileName;
         const ws_name = "SS_CablePlan";
-        const ws_name_label = "Labels";
+        const ws_name_label = "Run 1 Labels";
+        const ws_name_run2label = "Run 2 Labels";
         const ws_name_length = 'Lengths';
-
-
 
         // Variables to convert data into sheets
         const wb = XLSX.utils.book_new();
         const ws = XLSX.utils.json_to_sheet(jsonSheet);
         const ws_labels = XLSX.utils.json_to_sheet(labelSheet);
+        const ws_run2labels = XLSX.utils.json_to_sheet(run2labels);
         const ws_lengths = XLSX.utils.json_to_sheet(lenData);
+
 
         //add worksheets to workbook
         XLSX.utils.book_append_sheet(wb, ws, ws_name);
         XLSX.utils.book_append_sheet(wb, ws_labels, ws_name_label);
+        if (run2labels.length > 0) {
+            XLSX.utils.book_append_sheet(wb, ws_run2labels, ws_name_run2label);
+        }
         XLSX.utils.book_append_sheet(wb, ws_lengths, ws_name_length);
 
         //writes workbook
