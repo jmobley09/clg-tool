@@ -1,5 +1,7 @@
 $('#NextModal').modal({ show: false });
 $('#PortModal').modal({ show: false });
+$.ajaxSetup({ async: false });
+
 
 const rABS = true; // true: readAsBinaryString ; false: readAsArrayBuffer
 
@@ -170,6 +172,8 @@ function handleFile(e) {
                     mdfLocal.RU = parseInt(data[0].RU);
                     mdfLocal.Type = Localobj.Type;
 
+                }).then(function () {
+                    return mdfLocal;
                 });
             };
             mdfCalc();
@@ -185,13 +189,11 @@ function handleFile(e) {
             const cabGap = 48; // every cab gap is 4 FT & they are located between cabs 10-11 & 25-26
 
             // Code block calculating Connections
-            let cabLength = 0;
             const CabCalc = () => {
-
-                console.log();
 
                 // Calculates the number of cabs apart, and returns only positive numbers
                 const cabLengthCalc = (srcobj, rmtobj) => {
+                    let cabLength = 0;
                     if (srcobj.Row != rmtobj.Row && srcobj.Cab > 17) {
                         cabLength = 35 - srcobj.Cab;
                     } else if (srcobj.Row != rmtobj.Row && srcobj.Cab <= 17) {
@@ -201,12 +203,12 @@ function handleFile(e) {
                     if (cabLength < 0) {
                         cabLength = cabLength * -1;
                     };
+                    return cabLength;
                 };
-                cabLengthCalc(Localobj, Remoteobj);
 
                 // Adds the necessary gaps between the rows that have them
-                let gaps = 0;
                 const GapAdder = (srcobj, rmtobj) => {
+                    let gaps = 0;
                     if (srcobj.Row != rmtobj.Row && srcobj.Cab <= 26 && srcobj.Cab >= 17) {
                         gaps = 1;
                     } else if (srcobj.Row != rmtobj.Row && srcobj.Cab <= 17 && srcobj.Cab > 10) {
@@ -224,16 +226,20 @@ function handleFile(e) {
                     } else if (srcobj.Row == rmtobj.Row && rmtobj.Cab <= 10 && srcobj.Cab >= 26) {
                         gaps = 2;
                     }
+                    return gaps;
                 };
-                GapAdder(Localobj, Remoteobj);
+
 
                 // Var to hold total length in Inches
                 let LengthIn = 0;
 
                 const totalCalc = (srcobj, rmtobj) => {
 
+                    const cabLength = cabLengthCalc(Localobj, Remoteobj);
+                    const gaps = GapAdder(Localobj, Remoteobj);
                     const firstRu = 52 - srcobj.RU;
                     const secondRu = 52 - rmtobj.RU;
+
                     if (srcobj.Row != rmtobj.Row && (srcobj.Cab != rmtobj.Cab)) {
                         LengthIn = (cabLength * cabWidth) + (gaps * cabGap) + cabLiu + (firstRu * ruWidth) + topFiber + slack;
                     } else if (srcobj.Row == rmtobj.Row && (srcobj.Cab != rmtobj.Cab)) {
@@ -241,44 +247,61 @@ function handleFile(e) {
                     } else if (srcobj.Row == rmtobj.Row && (srcobj.Cab == rmtobj.Cab)) {
                         LengthIn = (firstRu * ruWidth) + slack;
                     }
+
+                    return LengthIn;
                 };
-                totalCalc(Localobj, Remoteobj);
 
-                const mdflength = (srcobj, rmtobj) => {
-                    cabLengthCalc(srcobj, rmtobj);
-                    GapAdder(srcobj, rmtobj);
-                    totalCalc(srcobj, rmtobj);
-
-                    console.log(LengthIn);
-                };
-                mdflength(mdfLocal, Remoteobj);
-
-                // take length in inches and converts to feet or meters
-                const inCabFt = Math.ceil(LengthIn / 12);
-                const inCabmt = Math.ceil(LengthIn * .0254);
+                // Holds the lengths of each run in Inches. Converted in function below
+                const run1 = totalCalc(Localobj, Remoteobj);
+                const run2 = totalCalc(mdfLocal, Remoteobj);
 
                 // takes in type of cable and adds to json object along with length
                 const typeConvert = () => {
                     if (Localobj.Type == "cons") {
                         jsonSheet[i]['Cable Type'] = "Copper";
-                        jsonSheet[i]['Run1'] = inCabFt + 'ft';
-                        consCables.push(inCabFt);
+                        jsonSheet[i]['Run1'] = Math.ceil(run1 / 12) + 'ft';
+                        consCables.push(Math.ceil(run1 / 12));
+
+                        if (run2 > 0) {
+                            jsonSheet[i]['Run2'] = Math.ceil(run2 / 12) + 'ft';
+                            consCables.push(Math.ceil(run2 / 12));
+                        }
                     } else if (Localobj.Type == "mgmt") {
                         jsonSheet[i]['Cable Type'] = "Copper";
-                        jsonSheet[i]['Run1'] = inCabFt + 'ft';
-                        mgmtCables.push(inCabFt);
+                        jsonSheet[i]['Run1'] = Math.ceil(run1 / 12) + 'ft';
+                        mgmtCables.push(Math.ceil(run1 / 12));
+
+                        if (run2 > 0) {
+                            jsonSheet[i]['Run2'] = Math.ceil(run2 / 12) + 'ft';
+                            mgmtCables.push(Math.ceil(run2 / 12));
+                        }
                     } if (Localobj.Type == "uplink") {
                         jsonSheet[i]['Cable Type'] = "Copper";
-                        jsonSheet[i]['Run1'] = inCabFt + 'ft';
-                        uplinkCables.push(inCabFt);
+                        jsonSheet[i]['Run1'] = Math.ceil(run1 / 12) + 'ft';
+                        uplinkCables.push(Math.ceil(run1 / 12));
+
+                        if (run2 > 0) {
+                            jsonSheet[i]['Run2'] = Math.ceil(run2 / 12) + 'ft';
+                            uplinkCables.push(Math.ceil(run2 / 12));
+                        }
                     } else if (Localobj.Type == "smfib") {
                         jsonSheet[i]['Cable Type'] = "Fiber";
-                        jsonSheet[i]['Run1'] = inCabmt + 'm';
+                        jsonSheet[i]['Run1'] = Math.ceil(run1 * .0254) + 'm';
+                        smfibCables.push(Math.ceil(run1 * .0254));
 
+                        if (run2 > 0) {
+                            jsonSheet[i]['Run2'] = Math.ceil(run2 * .0254) + 'm';
+                            smfibCables.push(Math.ceil(run2 * .0254));
+                        }
                     } else if (Localobj.Type == "mmfib") {
                         jsonSheet[i]['Cable Type'] = "Fiber";
-                        jsonSheet[i]['Run1'] = inCabmt + 'm';
-                        mmfibCables.push(inCabmt);
+                        jsonSheet[i]['Run1'] = Math.ceil(run1 * .0254) + 'm';
+                        mmfibCables.push(Math.ceil(run1 * .0254));
+
+                        if (run2 > 0) {
+                            jsonSheet[i]['Run2'] = Math.ceil(run2 * .0254) + 'm';
+                            mmfibCables.push(Math.ceil(run2 * .0254));
+                        }
                     }
                 }
                 typeConvert();
@@ -476,8 +499,6 @@ function handleFile(e) {
         const ws_name_label = "Labels";
         const ws_name_length = 'Lengths';
 
-
-
         // Variables to convert data into sheets
         const wb = XLSX.utils.book_new();
         const ws = XLSX.utils.json_to_sheet(jsonSheet);
@@ -490,7 +511,7 @@ function handleFile(e) {
         XLSX.utils.book_append_sheet(wb, ws_lengths, ws_name_length);
 
         //writes workbook
-        // XLSX.writeFile(wb, filename);
+        XLSX.writeFile(wb, filename);
 
     };
 
