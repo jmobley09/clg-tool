@@ -29,4 +29,8 @@ module.exports = function(app) {
     res.sendFile(path.join(__dirname, "../public/bugs.html"));
   });
 
+  app.get("/forcast", function(req, res) {
+    res.sendFile(path.join(__dirname, "../public/forcast.html"));
+  });
+
 };
