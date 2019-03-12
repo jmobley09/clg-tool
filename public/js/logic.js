@@ -92,10 +92,8 @@ function handleFile(e) {
 
             let RemoteSlot = '';
 
-            if (jsonSheet[i]['Slot']) {
-                RemoteSlot = jsonSheet[i]['Slot'].split(' ');
-            } else if (jsonSheet[i]['L. Slot']) {
-                RemoteSlot = jsonSheet[i]['L. Slot'].split(' ');
+            if (jsonSheet[i]['R. Slot']) {
+                RemoteSlot = jsonSheet[i]['R. Slot'].split(' ');
             }
 
             let cableType = 'Cable';
@@ -414,14 +412,18 @@ function handleFile(e) {
                     rmtPort = rmtname[0] + rmtname[1] + rmtname[2] + rmtname[rmtname.length - 2] + rmtname[rmtname.length - 1];
                 } else if (rmtname.length == 10 && Remoteobj.Slot != 1) {
                     rmtPort = Remoteobj.Slot + '/' + Remoteobj.Port[1];
+                    console.log('trigger 1');
                 }else if (rmtname.length == 9 && Remoteobj.Slot != 1) {
                     rmtPort = Remoteobj.Slot + '/' +  Remoteobj.Port[1];
+                    console.log('trigger 2');
                 } else if (Remoteobj.Slot.includes("null") || Remoteobj.Slot.includes("Null") || Remoteobj.Slot.includes("undefined") || Remoteobj.Slot == 1 && Remoteobj.Port == 'Management1' || Remoteobj.Port == 'Management2' || Remoteobj.Port == 'Console1' || Remoteobj.Port == 'Console2') {
                     rmtPort = rmtintro;
                 } else if (Remoteobj.Port.length == 2 && Remoteobj.Port != "Management1" || Remoteobj.Port != 'Management2' || Remoteobj.Port != 'Console1' || Remoteobj.Port != 'Console2' && rethinclu == false) {
                     rmtPort = rmtintro + '/' + Remoteobj.Port[1];
+                    console.log('trigger 3');
                 } else if (Remoteobj.Port.length > 2) {
                     rmtPort = Remoteobj.Slot + '/' + rmtname[rmtname.length - 1];
+                    console.log('trigger 4');
                 } else {
                     rmtPort = rmtintro;
                 }
@@ -436,6 +438,7 @@ function handleFile(e) {
                 labelobj2.rmtLabel = srcLabel + ' ' + srcPort;
 
                 console.log(rmtPort);
+                // console.log(Remoteobj)
 
                 let n = 1;
                 let j = 0;
