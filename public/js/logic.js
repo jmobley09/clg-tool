@@ -43,11 +43,6 @@ function handleFile(e) {
         // For loop to iterate through each object that is made. Each line in the speadsheet is an object
         for (let i = 0; i < jsonSheet.length; i++) {
 
-            if (jsonSheet[i]['R. Port'] == 'NextAvailable') {
-                $('#NextModal').modal('show');
-                throw " ";
-            };
-
             // Pulls local locations and breaks into Arrays
 
             let LocalArr = '';
@@ -56,7 +51,7 @@ function handleFile(e) {
                 LocalArr = jsonSheet[i]['Location'].split('.');
             } else if (jsonSheet[i]['L. Location']) {
                 LocalArr = jsonSheet[i]['L. Location'].split('.');
-            };
+            }
 
             let LocalPort = '';
 
@@ -68,6 +63,10 @@ function handleFile(e) {
                 LocalPort = jsonSheet[i]['L. Port'].split('/');
             } else if (jsonSheet[i]['L. Port'] && typeof jsonSheet[i]['L. Port'] == 'number') {
                 LocalPort = ['Ethernet' + jsonSheet[i]['L. Port']];
+            } else if (jsonSheet[i]['S. Port'] && typeof jsonSheet[i]['S. Port'] == 'string') {
+                LocalPort = jsonSheet[i]['S. Port'].split('/');
+            } else if (jsonSheet[i]['S. Port'] && typeof jsonSheet[i]['S. Port'] == 'number') {
+                LocalPort = ['Ethernet' + jsonSheet[i]['S. Port']];
             }
 
             let LocalSlot = '';
@@ -76,34 +75,93 @@ function handleFile(e) {
                 LocalSlot = jsonSheet[i]['Slot'].split(' ');
             } else if (jsonSheet[i]['L. Slot']) {
                 LocalSlot = jsonSheet[i]['L. Slot'].split(' ');
+            } else if (jsonSheet[i]['S. Slot']) {
+                LocalSlot = jsonSheet[i]['S. Slot'].split(' ');
             }
 
             // Pulls remote locations and breaks into Arrays
 
-            let RemoteArr = jsonSheet[i]['R. Location'].split('.');
+            let RemoteArr = '';
+
+            if (jsonSheet[i]['R. Location']) {
+                RemoteArr = jsonSheet[i]['R. Location'].split('.');
+            } else if (jsonSheet[i]['D. Location']) {
+                RemoteArr = jsonSheet[i]['D. Location'].split('.');
+            }
 
             let RemotePort = '';
 
-            if (typeof jsonSheet[i]['R. Port'] == "string") {
-                RemotePort = jsonSheet[i]['R. Port'].split('/');
-            } else if (typeof jsonSheet[i]['R. Port'] == "number") {
-                RemotePort = ['Ethernet' + jsonSheet[i]['R. Port']];
+            if (jsonSheet[i]['R. Port'] && typeof jsonSheet[i]['R. Port'] == 'string') {
+                LocalPort = jsonSheet[i]['R. Port'].split('/');
+            } else if (jsonSheet[i]['R. Port'] && typeof jsonSheet[i]['R. Port'] == 'number') {
+                LocalPort = ['Ethernet' + jsonSheet[i]['R. Port']];
+            } else if (jsonSheet[i]['D. Port'] && typeof jsonSheet[i]['D. Port'] == 'string') {
+                LocalPort = jsonSheet[i]['D. Port'].split('/');
+            } else if (jsonSheet[i]['D. Port'] && typeof jsonSheet[i]['D. Port'] == 'number') {
+                LocalPort = ['Ethernet' + jsonSheet[i]['D. Port']];
             }
 
             let RemoteSlot = '';
 
-            if (jsonSheet[i]['Slot']) {
-                RemoteSlot = jsonSheet[i]['Slot'].split(' ');
-            } else if (jsonSheet[i]['L. Slot']) {
-                RemoteSlot = jsonSheet[i]['L. Slot'].split(' ');
+            if (jsonSheet[i]['R. Slot']) {
+                RemoteSlot = jsonSheet[i]['R. Slot'].split(' ');
+            } else if (jsonSheet[i]['D. Slot']) {
+                RemoteSlot = jsonSheet[i]['D. Slot'].split(' ');
             }
+
+            // Object to hold all data of First Location
+            const Localobj = {};
+
+            if (jsonSheet[i]['S. Row']) {
+                Localobj.Location = "US." + jsonSheet[i]['S. Building'] + '.01';
+                Localobj.Hall = parseInt(jsonSheet[i]["S. Hall/Room"]),
+                    Localobj.Row =  parseInt(jsonSheet[i]['S. Row']),
+                    Localobj.Cab = parseInt(jsonSheet[i]['S. Rack/Cab']),
+                    Localobj.RU = parseInt(jsonSheet[i]['S. RMU']),
+                    Localobj.Slot = LocalSlot[1] || 1,
+                    Localobj.Port = LocalPort,
+                    Localobj.Type = cableType
+            } else {
+                Localobj.Location = LocalArr[0] + '.' + LocalArr[1] + '.' + LocalArr[2] + '.' + LocalArr[3],
+                    Localobj.Hall = LocalArr[4],
+                    Localobj.Row = parseInt(LocalArr[5]),
+                    Localobj.Cab = parseInt(LocalArr[6]),
+                    Localobj.RU = parseInt(LocalArr[7]),
+                    Localobj.Slot = LocalSlot[1] || 1,
+                    Localobj.Port = LocalPort,
+                    Localobj.Type = cableType
+            }
+
+
+            // Object to hold all data of Second Location
+            const Remoteobj = {};
+
+            if (jsonSheet[i]['D. Row']) {
+                Remoteobj.Location = "US." + jsonSheet[i]['D. Building'] + '.01';
+                Remoteobj.Hall = parseInt(jsonSheet[i]['D. Hall/Room']),
+                    Remoteobj.Row = parseInt(jsonSheet[i]['D. Row']),
+                    Remoteobj.Cab = parseInt(jsonSheet[i]['D. Rack/Cab']),
+                    Remoteobj.RU = parseInt(jsonSheet[i]['D. RMU']),
+                    Remoteobj.Slot = LocalSlot[1] || 1,
+                    Remoteobj.Port = LocalPort,
+                    Remoteobj.Type = cableType
+            } else {
+                Remoteobj.Location = RemoteArr[0] + '.' + RemoteArr[1] + '.' + RemoteArr[2] + '.' + RemoteArr[3],
+                Remoteobj.Hall = RemoteArr[4],
+                Remoteobj.Row = parseInt(RemoteArr[5]),
+                Remoteobj.Cab = parseInt(RemoteArr[6]),
+                Remoteobj.RU = parseInt(RemoteArr[7]),
+                Remoteobj.Slot = RemoteSlot[1] || 1,
+                Remoteobj.Port = RemotePort,
+                Remoteobj.Type = cableType
+            };
 
             let cableType = 'Cable';
 
             // Finds the correct cable type and changes it as needed
             const CableType = () => {
 
-                // determines management cables 
+                // determines management cables
                 if (LocalPort[0].includes('Management') || RemotePort[0].includes('Management') && jsonSheet[i]['Port Type'] == '1G' || jsonSheet[i]['Port Type'] == '10G') {
                     cableType = 'mgmt';
                     // determines console cables 
@@ -124,48 +182,25 @@ function handleFile(e) {
             };
             CableType();
 
-            // Object to hold all data of First Location
-            const Localobj = {
-                Location: LocalArr[0] + '.' + LocalArr[1] + '.' + LocalArr[2] + '.' + LocalArr[3],
-                Hall: LocalArr[4],
-                Row: parseInt(LocalArr[5]),
-                Cab: parseInt(LocalArr[6]),
-                RU: parseInt(LocalArr[7]),
-                Slot: LocalSlot[1] || 1,
-                Port: LocalPort,
-                Type: cableType
-            };
-
-            // Object to hold all data of Second Location
-            const Remoteobj = {
-                Location: RemoteArr[0] + '.' + RemoteArr[1] + '.' + RemoteArr[2],
-                Hall: RemoteArr[4],
-                Row: parseInt(RemoteArr[5]),
-                Cab: parseInt(RemoteArr[6]),
-                RU: parseInt(RemoteArr[7]),
-                Slot: RemoteSlot[1] || 1,
-                Port: RemotePort,
-                Type: cableType
-            };
-
             // defining new object to use with out of row calculations
             let mdfLocal = {};
 
             // Uses DB to find remote LIU location and uses that as source to calculate to destination
-            function mdfCalc() {
-                // updates row so that it is always two digits
-                let row = Localobj.Row;
-                if (row < 10) {
-                    row = '0' + row;
-                }
 
-                // var used to run query
-                let query = '/api/liu/' + Localobj.Location + '.' + Localobj.Hall + '.' + row;
+            // updates row so that it is always two digits
+            let row = Localobj.Row;
+            if (row < 10) {
+                row = '0' + row;
+            }
 
+            // var used to run query
+            let query = '/api/liu/' + Localobj.Location + '.' + Localobj.Hall + '.' + row;
+
+            promise1 = new Promise(function (resolve, reject) {
                 // api call to DB returning json of the remote location
-                $.get(query, function (data) {
+                let apicall = $.get(query, function (data) {
 
-                    const newLocation = data[0].Location.split('.');
+                    let newLocation = data[0].Location.split('.');
 
                     mdfLocal.Hall = newLocation[4];
                     mdfLocal.Row = parseInt(newLocation[5]);
@@ -177,6 +212,20 @@ function handleFile(e) {
                     // console.log(mdfLocal);
                     return mdfLocal;
                 });
+                if (apicall = true) {
+                    resolve(mdfLocal);
+                }
+
+            }).then(function (resolve) {
+
+                mdfLocal = resolve;
+                return mdfLocal;
+
+            });
+
+            if (jsonSheet[i]['R. Port'] == 'NextAvailable') {
+                $('#NextModal').modal('show');
+                throw " ";
             };
 
             // Calculations for length
@@ -236,8 +285,8 @@ function handleFile(e) {
 
                 const totalCalc = (srcobj, rmtobj) => {
 
-                    const cabLength = cabLengthCalc(Localobj, Remoteobj);
-                    const gaps = GapAdder(Localobj, Remoteobj);
+                    const cabLength = cabLengthCalc(srcobj, rmtobj);
+                    const gaps = GapAdder(srcobj, rmtobj);
                     const firstRu = 52 - srcobj.RU;
                     const secondRu = 52 - rmtobj.RU;
 
@@ -252,19 +301,24 @@ function handleFile(e) {
                     return LengthIn;
                 };
 
-                // Holds the lengths of each run in Inches. Converted in function below
-                const run1 = totalCalc(Localobj, Remoteobj);
+                let run1;
                 let run2;
 
+                // Holds the lengths of each run in Inches. Converted in function below
+                run1 = totalCalc(Localobj, Remoteobj);
+
+
                 if (Localobj.Row != Remoteobj.Row) {
-                    mdfCalc();
+
                     run2 = totalCalc(mdfLocal, Remoteobj);
+                    console.log(run2);
                 }
 
                 // used to create additional label if another run is present
                 if (run2 > 0) {
                     additonalRun = true;
                 };
+
 
                 // takes in type of cable and adds to json object along with length
                 const typeConvert = () => {
@@ -317,7 +371,6 @@ function handleFile(e) {
                 }
                 typeConvert();
             };
-            CabCalc();
 
             // sorts all the lengths that were added into either the ft length array or the meter length arr
             // creates a second array with total of each instance of the unique values
@@ -467,7 +520,8 @@ function handleFile(e) {
                     }
                 }
             }
-            createLabel();
+            promise1.then(CabCalc, createLabel, writeWB);
+            // createLabel();
 
         }; // end of for loop
 
@@ -542,30 +596,33 @@ function handleFile(e) {
         // 
         // Beginning of code to write info to new workbook and trigger a download
         // 
-        const filename = "SS_" + fileName;
-        const ws_name = "SS_CablePlan";
-        const ws_name_label = "Run 1 Labels";
-        const ws_name_run2label = "Run 2 Labels";
-        const ws_name_length = 'Lengths';
+        var writeWB = function () {
+            const filename = "SS_" + fileName;
+            const ws_name = "SS_CablePlan";
+            const ws_name_label = "Run 1 Labels";
+            const ws_name_run2label = "Run 2 Labels";
+            const ws_name_length = 'Lengths';
 
-        // Variables to convert data into sheets
-        const wb = XLSX.utils.book_new();
-        const ws = XLSX.utils.json_to_sheet(jsonSheet);
-        const ws_labels = XLSX.utils.json_to_sheet(labelSheet);
-        const ws_run2labels = XLSX.utils.json_to_sheet(run2labels);
-        const ws_lengths = XLSX.utils.json_to_sheet(lenData);
+            // Variables to convert data into sheets
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.json_to_sheet(jsonSheet);
+            const ws_labels = XLSX.utils.json_to_sheet(labelSheet);
+            const ws_run2labels = XLSX.utils.json_to_sheet(run2labels);
+            const ws_lengths = XLSX.utils.json_to_sheet(lenData);
 
+            console.log(jsonSheet);
 
-        //add worksheets to workbook
-        XLSX.utils.book_append_sheet(wb, ws, ws_name);
-        XLSX.utils.book_append_sheet(wb, ws_labels, ws_name_label);
-        if (run2labels.length > 0) {
-            XLSX.utils.book_append_sheet(wb, ws_run2labels, ws_name_run2label);
-        }
-        XLSX.utils.book_append_sheet(wb, ws_lengths, ws_name_length);
+            //add worksheets to workbook
+            XLSX.utils.book_append_sheet(wb, ws, ws_name);
+            XLSX.utils.book_append_sheet(wb, ws_labels, ws_name_label);
+            if (run2labels.length > 0) {
+                XLSX.utils.book_append_sheet(wb, ws_run2labels, ws_name_run2label);
+            }
+            XLSX.utils.book_append_sheet(wb, ws_lengths, ws_name_length);
 
-        //writes workbook
-        XLSX.writeFile(wb, filename);
+            //writes workbook
+            XLSX.writeFile(wb, filename);
+        };
 
     };
 
@@ -573,12 +630,12 @@ function handleFile(e) {
 };
 
 /*
-
+ 
 From this point on all pretains to calling the appropiate function for when one of the following happens:
     Speadsheet is dropped to page
     Speadsheet is dragged to page
     Speadsheet is uploaded to page
-
+ 
 */
 const upload = document.getElementById('upload');
 upload.addEventListener('change', handleFile, false);
