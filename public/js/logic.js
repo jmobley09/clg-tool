@@ -378,7 +378,7 @@ function handleFile(e) {
                     srcPort = 'Con' + srcname[srcname.length - 1];
                 } else if (Localobj.Port.includes("Console1") || Localobj.Port.includes("Console") || Localobj.Port.includes("console1") || Localobj.Port.includes("console")) {
                     srcPort = 'Con';
-                } else if (srcname.length == 10 && (Localobj.Slot.includes("null") || Localobj.Slot.includes("Null") || Localobj.Slot.includes("undefined") || Localobj.Slot == 1)) {
+                } else if (srcname.length == 10 && (Localobj.Slot == "null" || Localobj.Slot == "Null" || Localobj.Slot == "undefined" || Localobj.Slot == 1)) {
                     srcPort = srcname[0] + srcname[1] + srcname[2] + srcname[srcname.length - 2] + srcname[srcname.length - 1];
                 } else if (srcname.length == 10 && Localobj.Slot != 1) {
                     srcPort = Localobj.Slot + '/' + Localobj.Port[1];
@@ -408,7 +408,7 @@ function handleFile(e) {
                     rmtPort = 'Con' + rmtname[rmtname.length - 1];
                 } else if (Remoteobj.Port.includes("Console1") || Remoteobj.Port.includes("Console") || Remoteobj.Port.includes("console1") || Remoteobj.Port.includes("console")) {
                     rmtPort = 'Con';
-                } else if (rmtname.length == 10 && (Remoteobj.Slot.includes("null") || Remoteobj.Slot.includes("Null") || Remoteobj.Slot.includes("undefined") || Remoteobj.Slot == 1)) {
+                } else if (rmtname.length == 10 && (Remoteobj.Slot == "null" || Remoteobj.Slot == "Null" || Remoteobj.Slot == "undefined" || Remoteobj.Slot == 1)) {
                     rmtPort = rmtname[0] + rmtname[1] + rmtname[2] + rmtname[rmtname.length - 2] + rmtname[rmtname.length - 1];
                 } else if (rmtname.length == 10 && Remoteobj.Slot != 1) {
                     rmtPort = Remoteobj.Slot + '/' + Remoteobj.Port[1];
@@ -416,7 +416,7 @@ function handleFile(e) {
                 }else if (rmtname.length == 9 && Remoteobj.Slot != 1) {
                     rmtPort = Remoteobj.Slot + '/' +  Remoteobj.Port[1];
                     console.log('trigger 2');
-                } else if (Remoteobj.Slot.includes("null") || Remoteobj.Slot.includes("Null") || Remoteobj.Slot.includes("undefined") || Remoteobj.Slot == 1 && Remoteobj.Port == 'Management1' || Remoteobj.Port == 'Management2' || Remoteobj.Port == 'Console1' || Remoteobj.Port == 'Console2') {
+                } else if (Remoteobj.Slot = "null" || Remoteobj.Slot == "Null" || Remoteobj.Slot == "undefined" || Remoteobj.Slot == 1 && Remoteobj.Port == 'Management1' || Remoteobj.Port == 'Management2' || Remoteobj.Port == 'Console1' || Remoteobj.Port == 'Console2') {
                     rmtPort = rmtintro;
                 } else if (Remoteobj.Port.length == 2 && Remoteobj.Port != "Management1" || Remoteobj.Port != 'Management2' || Remoteobj.Port != 'Console1' || Remoteobj.Port != 'Console2' && rethinclu == false) {
                     rmtPort = rmtintro + '/' + Remoteobj.Port[1];
