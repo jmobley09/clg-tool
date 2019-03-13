@@ -172,7 +172,7 @@ function handleFile(e) {
                     mdfLocal.Type = Localobj.Type;
 
                 }).then(function () {
-                    console.log(mdfLocal);
+                    // console.log(mdfLocal);
                     return mdfLocal;
                 });
             };
@@ -192,16 +192,25 @@ function handleFile(e) {
 
                 // Calculates the number of cabs apart, and returns only positive numbers
                 const cabLengthCalc = (srcobj, rmtobj) => {
+
                     let cabLength = 0;
+
+                    // calculates out of row runs -- goes to LIU 
                     if (srcobj.Row != rmtobj.Row && srcobj.Cab > 17) {
                         cabLength = 35 - srcobj.Cab;
                     } else if (srcobj.Row != rmtobj.Row && srcobj.Cab <= 17) {
                         cabLength = (1 - srcobj.Cab);
-                    };
+                    } 
+                    
+                    // calculates in row - number of cabs seperating the two
+                    if (srcobj.Row == rmtobj.Row) {
+                        cabLength = srcobj.Cab - rmtobj.Cab;
+                    }
 
                     if (cabLength < 0) {
                         cabLength = cabLength * -1;
                     };
+                    console.log(cabLength);
                     return cabLength;
                 };
 
@@ -382,8 +391,8 @@ function handleFile(e) {
                     srcPort = srcname[0] + srcname[1] + srcname[2] + srcname[srcname.length - 2] + srcname[srcname.length - 1];
                 } else if (srcname.length == 10 && Localobj.Slot != 1) {
                     srcPort = Localobj.Slot + '/' + Localobj.Port[1];
-                }else if (srcname.length == 9 && Localobj.Slot != 1) {
-                    srcPort = Localobj.Slot + '/' +  Localobj.Port[1];
+                } else if (srcname.length == 9 && Localobj.Slot != 1) {
+                    srcPort = Localobj.Slot + '/' + Localobj.Port[1];
                 } else if (Localobj.Slot == "Null" || Localobj.Slot == "Undefined" || Localobj.Slot == "1" && Localobj.Port == 'Management1' || Localobj.Port == 'Management2' || Localobj.Port == 'Console1' || Localobj.Port == 'Console2') {
                     srcPort = srcintro;
                 } else if (Localobj.Port.length == 2 && Localobj.Port != "Management1" || Localobj.Port != 'Management2' || Localobj.Port != 'Console1' || Localobj.Port != 'Console2' && sethinclu == false) {
@@ -412,18 +421,14 @@ function handleFile(e) {
                     rmtPort = rmtname[0] + rmtname[1] + rmtname[2] + rmtname[rmtname.length - 2] + rmtname[rmtname.length - 1];
                 } else if (rmtname.length == 10 && Remoteobj.Slot != 1) {
                     rmtPort = Remoteobj.Slot + '/' + Remoteobj.Port[1];
-                    console.log('trigger 1');
-                }else if (rmtname.length == 9 && Remoteobj.Slot != 1) {
-                    rmtPort = Remoteobj.Slot + '/' +  Remoteobj.Port[1];
-                    console.log('trigger 2');
+                } else if (rmtname.length == 9 && Remoteobj.Slot != 1) {
+                    rmtPort = Remoteobj.Slot + '/' + Remoteobj.Port[1];
                 } else if (Remoteobj.Slot = "null" || Remoteobj.Slot == "Null" || Remoteobj.Slot == "undefined" || Remoteobj.Slot == 1 && Remoteobj.Port == 'Management1' || Remoteobj.Port == 'Management2' || Remoteobj.Port == 'Console1' || Remoteobj.Port == 'Console2') {
                     rmtPort = rmtintro;
                 } else if (Remoteobj.Port.length == 2 && Remoteobj.Port != "Management1" || Remoteobj.Port != 'Management2' || Remoteobj.Port != 'Console1' || Remoteobj.Port != 'Console2' && rethinclu == false) {
                     rmtPort = rmtintro + '/' + Remoteobj.Port[1];
-                    console.log('trigger 3');
                 } else if (Remoteobj.Port.length > 2) {
                     rmtPort = Remoteobj.Slot + '/' + rmtname[rmtname.length - 1];
-                    console.log('trigger 4');
                 } else {
                     rmtPort = rmtintro;
                 }
@@ -437,7 +442,6 @@ function handleFile(e) {
                 labelobj2.srcPort = rmtPort;
                 labelobj2.rmtLabel = srcLabel + ' ' + srcPort;
 
-                console.log(rmtPort);
                 // console.log(Remoteobj)
 
                 let n = 1;
