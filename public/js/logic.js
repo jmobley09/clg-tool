@@ -187,6 +187,13 @@ function handleFile(e) {
             const slack = 12; // extra 1 foot of slack for dressing;
             const cabGap = 48; // every cab gap is 4 FT & they are located between cabs 10-11 & 25-26
 
+            // 1100: 10-11 & 25-26
+            // 1500: 5-6 & 20-21
+            // 2100: 10-11 & 25-26
+            // 2500: 10-11 & 25-26
+            // 3100: 10-11 & 25-26
+            // 3500: 15-16 & 30-31
+
             // Code block calculating Connections
             const CabCalc = () => {
 
@@ -195,23 +202,29 @@ function handleFile(e) {
 
                     let cabLength = 0;
 
-                    // calculates out of row runs -- goes to LIU 
-                    if (srcobj.Row != rmtobj.Row && srcobj.Cab > 17) {
-                        cabLength = 35 - srcobj.Cab;
-                    } else if (srcobj.Row != rmtobj.Row && srcobj.Cab <= 17) {
-                        cabLength = (1 - srcobj.Cab);
-                    } 
-                    
-                    // calculates in row - number of cabs seperating the two
-                    if (srcobj.Row == rmtobj.Row) {
-                        cabLength = srcobj.Cab - rmtobj.Cab;
-                    }
+                    if (srcobj.Row == 25 || srcobj.Row == 26) {
+                        
+                    } else {
+                        // calculates out of row runs -- goes to LIU 
+                        if (srcobj.Row != rmtobj.Row && srcobj.Cab > 17) {
+                            cabLength = 35 - srcobj.Cab;
+                            console.log('trigger 1');
+                        } else if (srcobj.Row != rmtobj.Row && srcobj.Cab <= 17) {
+                            cabLength = (1 - srcobj.Cab);
+                            console.log('trigger 2');
+                        }
 
-                    if (cabLength < 0) {
-                        cabLength = cabLength * -1;
-                    };
-                    console.log(cabLength);
-                    return cabLength;
+                        // calculates in row - number of cabs seperating the two
+                        if (srcobj.Row == rmtobj.Row) {
+                            cabLength = srcobj.Cab - rmtobj.Cab;
+                        }
+
+                        if (cabLength < 0) {
+                            cabLength = cabLength * -1;
+                        };
+                        console.log('# of cabs ' + cabLength);
+                        return cabLength;
+                    }
                 };
 
                 // Adds the necessary gaps between the rows that have them
@@ -234,6 +247,7 @@ function handleFile(e) {
                     } else if (srcobj.Row == rmtobj.Row && rmtobj.Cab <= 10 && srcobj.Cab >= 26) {
                         gaps = 2;
                     }
+                    console.log('gaps ' + gaps);
                     return gaps;
                 };
 
@@ -572,7 +586,7 @@ function handleFile(e) {
         XLSX.utils.book_append_sheet(wb, ws_lengths, ws_name_length);
 
         //writes workbook
-        XLSX.writeFile(wb, filename);
+        // XLSX.writeFile(wb, filename);
 
     };
 

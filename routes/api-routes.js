@@ -8,6 +8,7 @@ const mongoose = require('mongoose');
 
 // Requiring our models
 const liudb = require("../models/liu.js");
+const mdfdb = require("../models/mdf-liu.js");
 
 // Routes
 // =============================================================
@@ -24,6 +25,23 @@ module.exports = function (app) {
     app.get("/api/liu/:location", function (req, res) {
         liudb.find({
             Remote: req.params.location
+        }).then(doc => {
+            res.json(doc);
+            return JSON.stringify(doc);
+        })
+    });
+
+    // GET route for getting all mdf data 
+    app.get("/api/mdf/", function (req, res) {
+        mdfdb.find({}).then(doc => {
+            res.json(doc);
+        })
+    });
+
+    // GET route for getting specific MDF liu data
+    app.get("/api/mdf/:mdf", function (req, res) {
+        mdfdb.find({
+            Location: req.params.mdf
         }).then(doc => {
             res.json(doc);
             return JSON.stringify(doc);
