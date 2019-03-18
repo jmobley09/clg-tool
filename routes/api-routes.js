@@ -39,9 +39,10 @@ module.exports = function (app) {
     });
 
     // GET route for getting specific MDF liu data
-    app.get("/api/mdf/:mdf", function (req, res) {
+    app.get("/api/mdf/:mdf/:remote", function (req, res) {
         mdfdb.find({
-            Location: req.params.mdf
+            Location: req.params.mdf,
+            "Remote Location": req.params.remote
         }).then(doc => {
             res.json(doc);
             return JSON.stringify(doc);
