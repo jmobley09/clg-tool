@@ -108,7 +108,7 @@ function handleFile(e) {
                 } else if (LocalPort[0].includes('console') || RemotePort[0].includes('console') && jsonSheet[i]['Port Type'] == '1G' || jsonSheet[i]['Port Type'] == '10G') {
                     cableType = 'cons';
                     // determines all copper uplinks to port 49
-                } else if (LocalPort[0].includes('Ethernet49') || RemotePort[0].includes('Ethernet49') && jsonSheet[i]['Port Type'] == '1G' || jsonSheet[i]['Port Type'] == '10G') {
+                } else if ((LocalPort[0].includes('Ethernet49') || RemotePort[0].includes('Ethernet49')) && (jsonSheet[i]['Port Type'] == '1G' || jsonSheet[i]['Port Type'] == '10G')) {
                     cableType = 'uplink';
                     // determines all copper uplinks to port 51
                 } else if (LocalPort[0].includes('Ethernet51') || RemotePort[0].includes('Ethernet51') && jsonSheet[i]['Port Type'] == '1G' || jsonSheet[i]['Port Type'] == '10G') {
@@ -121,6 +121,8 @@ function handleFile(e) {
                 }
             };
             CableType();
+
+            console.log(cableType);
 
             // Object to hold all data of First Location
             const Localobj = {
@@ -172,7 +174,6 @@ function handleFile(e) {
                     mdfLocal.Type = Localobj.Type;
 
                 }).then(function () {
-                    // console.log(mdfLocal);
                     return mdfLocal;
                 });
             };
@@ -187,6 +188,13 @@ function handleFile(e) {
             const slack = 12; // extra 1 foot of slack for dressing;
             const cabGap = 48; // every cab gap is 4 FT & they are located between cabs 10-11 & 25-26
 
+            // 1100: 10-11 & 25-26
+            // 1500: 5-6 & 20-21
+            // 2100: 10-11 & 25-26
+            // 2500: 10-11 & 25-26
+            // 3100: 10-11 & 25-26
+            // 3500: 15-16 & 30-31
+
             // Code block calculating Connections
             const CabCalc = () => {
 
@@ -195,23 +203,26 @@ function handleFile(e) {
 
                     let cabLength = 0;
 
-                    // calculates out of row runs -- goes to LIU 
-                    if (srcobj.Row != rmtobj.Row && srcobj.Cab > 17) {
-                        cabLength = 35 - srcobj.Cab;
-                    } else if (srcobj.Row != rmtobj.Row && srcobj.Cab <= 17) {
-                        cabLength = (1 - srcobj.Cab);
-                    } 
-                    
-                    // calculates in row - number of cabs seperating the two
-                    if (srcobj.Row == rmtobj.Row) {
-                        cabLength = srcobj.Cab - rmtobj.Cab;
-                    }
+                    if (srcobj.Row == 25 || srcobj.Row == 26) {
+                        
+                    } else {
+                        // calculates out of row runs -- goes to LIU 
+                        if (srcobj.Row != rmtobj.Row && srcobj.Cab > 17) {
+                            cabLength = 35 - srcobj.Cab;
+                        } else if (srcobj.Row != rmtobj.Row && srcobj.Cab <= 17) {
+                            cabLength = (1 - srcobj.Cab);
+                        }
 
-                    if (cabLength < 0) {
-                        cabLength = cabLength * -1;
-                    };
-                    console.log(cabLength);
-                    return cabLength;
+                        // calculates in row - number of cabs seperating the two
+                        if (srcobj.Row == rmtobj.Row) {
+                            cabLength = srcobj.Cab - rmtobj.Cab;
+                        }
+
+                        if (cabLength < 0) {
+                            cabLength = cabLength * -1;
+                        };
+                        return cabLength;
+                    }
                 };
 
                 // Adds the necessary gaps between the rows that have them
