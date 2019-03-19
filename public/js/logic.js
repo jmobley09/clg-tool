@@ -108,7 +108,7 @@ function handleFile(e) {
                 } else if (LocalPort[0].includes('console') || RemotePort[0].includes('console') && jsonSheet[i]['Port Type'] == '1G' || jsonSheet[i]['Port Type'] == '10G') {
                     cableType = 'cons';
                     // determines all copper uplinks to port 49
-                } else if (LocalPort[0].includes('Ethernet49') || RemotePort[0].includes('Ethernet49') && jsonSheet[i]['Port Type'] == '1G' || jsonSheet[i]['Port Type'] == '10G') {
+                } else if ((LocalPort[0].includes('Ethernet49') || RemotePort[0].includes('Ethernet49')) && (jsonSheet[i]['Port Type'] == '1G' || jsonSheet[i]['Port Type'] == '10G')) {
                     cableType = 'uplink';
                     // determines all copper uplinks to port 51
                 } else if (LocalPort[0].includes('Ethernet51') || RemotePort[0].includes('Ethernet51') && jsonSheet[i]['Port Type'] == '1G' || jsonSheet[i]['Port Type'] == '10G') {
@@ -121,6 +121,8 @@ function handleFile(e) {
                 }
             };
             CableType();
+
+            console.log(cableType);
 
             // Object to hold all data of First Location
             const Localobj = {
@@ -172,7 +174,6 @@ function handleFile(e) {
                     mdfLocal.Type = Localobj.Type;
 
                 }).then(function () {
-                    // console.log(mdfLocal);
                     return mdfLocal;
                 });
             };
@@ -208,10 +209,8 @@ function handleFile(e) {
                         // calculates out of row runs -- goes to LIU 
                         if (srcobj.Row != rmtobj.Row && srcobj.Cab > 17) {
                             cabLength = 35 - srcobj.Cab;
-                            console.log('trigger 1');
                         } else if (srcobj.Row != rmtobj.Row && srcobj.Cab <= 17) {
                             cabLength = (1 - srcobj.Cab);
-                            console.log('trigger 2');
                         }
 
                         // calculates in row - number of cabs seperating the two
@@ -222,7 +221,6 @@ function handleFile(e) {
                         if (cabLength < 0) {
                             cabLength = cabLength * -1;
                         };
-                        console.log('# of cabs ' + cabLength);
                         return cabLength;
                     }
                 };
@@ -247,7 +245,6 @@ function handleFile(e) {
                     } else if (srcobj.Row == rmtobj.Row && rmtobj.Cab <= 10 && srcobj.Cab >= 26) {
                         gaps = 2;
                     }
-                    console.log('gaps ' + gaps);
                     return gaps;
                 };
 
@@ -586,7 +583,7 @@ function handleFile(e) {
         XLSX.utils.book_append_sheet(wb, ws_lengths, ws_name_length);
 
         //writes workbook
-        // XLSX.writeFile(wb, filename);
+        XLSX.writeFile(wb, filename);
 
     };
 
