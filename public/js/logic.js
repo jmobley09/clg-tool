@@ -102,7 +102,7 @@ function handleFile(e) {
             const CableType = () => {
 
                 // determines management cables 
-                if (LocalPort[0].includes('Management') || RemotePort[0].includes('Management') && jsonSheet[i]['Port Type'] == '1G' || jsonSheet[i]['Port Type'] == '10G') {
+                if ((LocalPort[0].includes('Management') || RemotePort[0].includes('Management')) && jsonSheet[i]['Port Type'] == '1G' || jsonSheet[i]['Port Type'] == '10G') {
                     cableType = 'mgmt';
                     // determines console cables 
                 } else if (LocalPort[0].includes('console') || RemotePort[0].includes('console') && jsonSheet[i]['Port Type'] == '1G' || jsonSheet[i]['Port Type'] == '10G') {
@@ -182,10 +182,10 @@ function handleFile(e) {
             // All variables stored in Inches
             const ruWidth = 2; // each RU is 2 in
             const topCopper = 24; // from top RU to copper tray is 24in
-            const topFiber = 30; // from top RU to fiber tray is 10in
+            const topFiber = 36; // from top RU to fiber tray is 36in
             const cabWidth = 27; // each cab is 2ft 3 in wide
             const cabLiu = 12; // from cab 1  or cab 35 to the liu tray at the end of the row
-            const slack = 12; // extra 1 foot of slack for dressing;
+            const slack = 24; // extra 2 foot of slack for dressing;
             const cabGap = 48; // every cab gap is 4 FT & they are located between cabs 10-11 & 25-26
 
             // 1100: 10-11 & 25-26
@@ -194,6 +194,14 @@ function handleFile(e) {
             // 2500: 10-11 & 25-26
             // 3100: 10-11 & 25-26
             // 3500: 15-16 & 30-31
+
+
+            /* 
+            
+            
+            DO NOT TRUST STERLAND
+            
+            */
 
             // Code block calculating Connections
             const CabCalc = () => {
@@ -204,7 +212,9 @@ function handleFile(e) {
                     let cabLength = 0;
 
                     if (srcobj.Row == 25 || srcobj.Row == 26) {
-                        
+                        // need to finish
+
+
                     } else {
                         // calculates out of row runs -- goes to LIU 
                         if (srcobj.Row != rmtobj.Row && srcobj.Cab > 17) {
@@ -252,10 +262,11 @@ function handleFile(e) {
                 // Var to hold total length in Inches
                 let LengthIn = 0;
 
-                const totalCalc = (srcobj, rmtobj) => {
+                // calculates the total length from all other functions
+                const totalCalc = (srcobj, rmtobj) => {  
 
-                    const cabLength = cabLengthCalc(Localobj, Remoteobj);
-                    const gaps = GapAdder(Localobj, Remoteobj);
+                    const cabLength = cabLengthCalc(srcobj, rmtobj);
+                    const gaps = GapAdder(srcobj, rmtobj);
                     const firstRu = 52 - srcobj.RU;
                     const secondRu = 52 - rmtobj.RU;
 
